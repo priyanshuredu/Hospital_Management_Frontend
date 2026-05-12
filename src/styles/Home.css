@@ -1,0 +1,145 @@
+.home-container.light {
+  --bg-primary: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --border-color: #e9ecef;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.home-container.dark {
+  --bg-primary: #1a1a2e;
+  --card-bg: #16213e;
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --border-color: #2c2c3e;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.home-container {
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.home-header h1 {
+  color: var(--text-primary);
+  font-size: 28px;
+  margin: 0;
+}
+
+.header-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--card-bg);
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-info h3 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-info p {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.stat-change {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.stat-change.positive {
+  background: #4caf5020;
+  color: #4caf50;
+}
+
+.recent-section {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.recent-activities h2 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg-primary);
+  transition: background 0.2s ease;
+}
+
+.activity-item:hover {
+  background: var(--border-color);
+}
+
+.activity-item p {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.activity-item small {
+  color: var(--text-secondary);
+  font-size: 11px;
+}

@@ -1,0 +1,222 @@
+/* CityManagement.css */
+.city-management.light {
+  --bg-primary: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --border-color: #e9ecef;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --info-color: #17a2b8;
+}
+
+.city-management.dark {
+  --bg-primary: #1a1a2e;
+  --card-bg: #16213e;
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --border-color: #2c2c3e;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --info-color: #17a2b8;
+}
+
+.city-management {
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+/* Search Bar */
+.search-bar {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  box-shadow: var(--shadow);
+}
+
+.search-input {
+  flex: 2;
+  min-width: 250px;
+}
+
+.search-input label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.search-input input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.search-btn {
+  padding: 8px 24px;
+  background: var(--info-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.reset-btn {
+  padding: 8px 24px;
+  background: var(--border-color);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Export Section */
+.export-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+
+.export-btn {
+  padding: 8px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 20px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: var(--border-color);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.page-info {
+  margin: 0 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Tooltip */
+[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+}
+
+[data-tooltip]:before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  display: none;
+  z-index: 10;
+}
+
+[data-tooltip]:hover:before {
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .city-management {
+    padding: 16px;
+  }
+  
+  .search-bar {
+    flex-direction: column;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+  
+  .pagination {
+    flex-wrap: wrap;
+  }
+}
+/* Add to StateManagement.css, DistrictManagement.css, CityManagement.css */
+.refresh-btn {
+  padding: 10px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: var(--hover-bg);
+  transform: translateY(-1px);
+}
+
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.state-header, .district-header, .city-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}

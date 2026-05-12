@@ -1,0 +1,202 @@
+/* StateManagement.css */
+.state-management.light {
+  --bg-primary: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --border-color: #e9ecef;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.state-management.dark {
+  --bg-primary: #1a1a2e;
+  --card-bg: #16213e;
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --border-color: #2c2c3e;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.state-management {
+  padding: 24px;
+  background: var(--bg-primary);
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+/* Add State Button */
+.add-state-btn {
+  margin-bottom: 24px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-state-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 32px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow);
+}
+
+.modal-content h3 {
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-buttons button:first-child {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+
+.modal-buttons button:last-child {
+  background: #4a9eff;
+  color: white;
+}
+/* Add to StateManagement.css */
+.state-header {
+  margin-bottom: 24px;
+}
+
+.add-state-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-state-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Add to DistrictManagement.css */
+.district-header {
+  margin-bottom: 24px;
+}
+
+.add-district-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-district-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Add to CityManagement.css */
+.city-header {
+  margin-bottom: 24px;
+}
+
+.add-city-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.add-city-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+/* Add to StateManagement.css, DistrictManagement.css, CityManagement.css */
+.refresh-btn {
+  padding: 10px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: var(--hover-bg);
+  transform: translateY(-1px);
+}
+
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.state-header, .district-header, .city-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
