@@ -1,0 +1,128 @@
+/* Main Layout Container */
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.main-layout.light {
+  --bg-primary: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  --border-color: #e9ecef;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --hover-bg: #f1f3f5;
+}
+
+.main-layout.dark {
+  --bg-primary: #1a1a2e;
+  --card-bg: #16213e;
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --border-color: #2c2c3e;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --hover-bg: #1f2937;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
+  overflow-x: auto;
+  background: var(--bg-primary);
+}
+
+/* Scrollbar Styling for Main Content */
+.main-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
+  border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-primary);
+}
+
+/* Animation for page transitions */
+.main-content > * {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 1000;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+/* Loading Spinner Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Print Styles */
+@media print {
+  .sidebar,
+  .theme-toggle,
+  .action-buttons,
+  .refresh-btn,
+  .export-btn,
+  .add-btn {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+  }
+  
+  .main-layout {
+    display: block;
+  }
+}

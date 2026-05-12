@@ -1,44 +1,21 @@
-import React, { useState } from 'react';
-import Sidebar from './components/Sidebar';
-import Home from './components/Home';
-import StateManagement from './components/StateManagement';
-import DistrictManagement from './components/DistrictManagement';
-import CityManagement from './components/CityManagement';
-import EditProfile from './components/EditProfile';
-import ResetPassword from './components/ResetPassword';
+import React from 'react';
 import { ThemeProvider } from './components/ThemeContext';
+import MainLayout from './components/MainLayout';
+import {BrowserRouter , Routes , Route} from 'react-router-dom'
 import './App.css';
+import Login from './components/Login';
+import MainDashboard from './components/MainDashboard';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('home');
-
-  const renderContent = () => {
-    switch(activeTab) {
-      case 'home':
-        return <Home />;
-      case 'state':
-        return <StateManagement />;
-      case 'district':
-        return <DistrictManagement />;
-      case 'city':
-        return <CityManagement />;
-      case 'edit-profile':
-        return <EditProfile />;
-      case 'reset-password':
-        return <ResetPassword />;
-      default:
-        return <Home />;
-    }
-  };
-
   return (
     <ThemeProvider>
-      <div className="app">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        <main className="main-content">
-          {renderContent()}
-        </main>
-      </div>
+      <BrowserRouter>
+      <Routes>
+        <Route path='/login' element={<Login/>}></Route>
+        <Route path='/' element={<MainDashboard/>}></Route>
+        <Route path='/super-admin' element={<MainLayout />}></Route>
+      </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  Home, 
+  Home,
+  HospitalIcon, 
   MapPin, 
   Map, 
   Building2, 
@@ -12,7 +13,12 @@ import {
   Moon,
   ChevronDown,
   ChevronRight,
-  Hospital
+  Hospital,
+  Activity,
+  Calendar,
+  Settings,
+  Bell,
+  Shield
 } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 import '../styles/Sidebar.css';
@@ -21,19 +27,28 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [isLocationsOpen, setIsLocationsOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isManagementOpen, setIsManagementOpen] = useState(false);
 
   const menuItems = {
     main: [
       { id: 'home', label: 'Home', icon: Home },
+      { id: 'hospital', label: 'Hospitals', icon: HospitalIcon },
     ],
     locations: [
       { id: 'state', label: 'State', icon: MapPin },
       { id: 'district', label: 'District', icon: Map },
       { id: 'city', label: 'City', icon: Building2 },
     ],
+    management: [
+      { id: 'departments', label: 'Departments', icon: Activity },
+      { id: 'appointments', label: 'Appointments', icon: Calendar },
+      { id: 'settings', label: 'Settings', icon: Settings },
+    ],
     profile: [
       { id: 'edit-profile', label: 'Edit Profile', icon: Edit3 },
       { id: 'reset-password', label: 'Reset Password', icon: Lock },
+      { id: 'notifications', label: 'Notifications', icon: Bell },
+      { id: 'security', label: 'Security', icon: Shield },
     ]
   };
 
@@ -50,16 +65,18 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
       {/* Navigation Menu */}
       <nav className="nav-menu">
-        {/* Home */}
-        <div className="nav-item">
-          <button
-            className={`nav-link ${activeTab === 'home' ? 'active' : ''}`}
-            onClick={() => setActiveTab('home')}
-          >
-            <Home size={20} />
-            <span>Home</span>
-          </button>
-        </div>
+        {/* Main Menu Items (Home & Hospitals) */}
+        {menuItems.main.map(item => (
+          <div key={item.id} className="nav-item">
+            <button
+              className={`nav-link ${activeTab === item.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(item.id)}
+            >
+              <item.icon size={20} />
+              <span>{item.label}</span>
+            </button>
+          </div>
+        ))}
 
         {/* Locations Dropdown */}
         <div className="nav-dropdown">
@@ -75,6 +92,33 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           {isLocationsOpen && (
             <div className="dropdown-items">
               {menuItems.locations.map(item => (
+                <button
+                  key={item.id}
+                  className={`nav-link dropdown-item ${activeTab === item.id ? 'active' : ''}`}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <item.icon size={18} />
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Management Dropdown */}
+        <div className="nav-dropdown">
+          <button 
+            className="dropdown-header"
+            onClick={() => setIsManagementOpen(!isManagementOpen)}
+          >
+            <Settings size={20} />
+            <span>Management</span>
+            {isManagementOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </button>
+          
+          {isManagementOpen && (
+            <div className="dropdown-items">
+              {menuItems.management.map(item => (
                 <button
                   key={item.id}
                   className={`nav-link dropdown-item ${activeTab === item.id ? 'active' : ''}`}
@@ -107,8 +151,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               <User size={24} />
             </div>
             <div className="user-details">
-              <span className="username">Username</span>
-              <span className="user-status">online</span>
+              <span className="username">Admin User</span>
+              <span className="user-status">Administrator</span>
             </div>
             {isProfileOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
           </button>
@@ -125,6 +169,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                   <span>{item.label}</span>
                 </button>
               ))}
+              <hr className="dropdown-divider" />
               <button className="profile-item logout">
                 <LogOut size={18} />
                 <span>Logout</span>
