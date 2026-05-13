@@ -5,6 +5,7 @@ import {BrowserRouter , Routes , Route} from 'react-router-dom'
 import './App.css';
 import Login from './components/Login';
 import MainDashboard from './components/MainDashboard';
+import HospitalRegistration from './components/HospitalRegistration';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path='/login' element={<Login/>}></Route>
         <Route path='/' element={<MainDashboard/>}></Route>
         <Route path='/super-admin' element={<MainLayout />}></Route>
+        <Route path='/hospital-registeration' element={<HospitalRegistration />}></Route>
       </Routes>
       </BrowserRouter>
     </ThemeProvider>
