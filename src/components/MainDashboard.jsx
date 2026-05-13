@@ -34,7 +34,7 @@ const MainDashboard = () => {
     if (token && role) {
       setTimeout(() => {
         if (role === 'admin') {
-          navigate('/admin');
+          navigate('/super-admin');
         } else if (role === 'user') {
           navigate('/user');
         }
@@ -43,7 +43,7 @@ const MainDashboard = () => {
   }, [navigate]);
 
   const handleGetStarted = () => {
-    navigate('/login');
+    navigate('/hospital-registeration');
   };
 
   const features = [
@@ -172,7 +172,7 @@ const MainDashboard = () => {
               Streamline operations, enhance patient care, and improve healthcare delivery.
             </p>
             <div className="hero-buttons">
-              <button className="btn-primary-hero" onClick={handleGetStarted}>
+              <button className="btn-primary-hero" onClick={() => navigate('/login')}>
                 Get Started
                 <ChevronRight size={18} />
               </button>

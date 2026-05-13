@@ -5,7 +5,7 @@ import Hospitals from './Hospitals';
 import StateManagement from './StateManagement';
 import DistrictManagement from './DistrictManagement';
 import CityManagement from './CityManagement';
-// import DepartmentsManagement from './components/DepartmentsManagement';
+import DepartmentsManagement from './DepartmentManagement';
 // import AppointmentsManagement from './components/AppointmentsManagement';
 // import SettingsManagement from './components/SettingsManagement';
 import EditProfile from './EditProfile';
@@ -31,8 +31,8 @@ const MainLayout = () => {
         return <DistrictManagement />;
       case 'city':
         return <CityManagement />;
-      // case 'departments':
-      //   return <DepartmentsManagement />;
+      case 'departments':
+        return <DepartmentsManagement />;
       // case 'appointments':
       //   return <AppointmentsManagement />;
       // case 'settings':

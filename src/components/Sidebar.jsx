@@ -33,6 +33,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     main: [
       { id: 'home', label: 'Home', icon: Home },
       { id: 'hospital', label: 'Hospitals', icon: HospitalIcon },
+      { id: 'departments', label: 'Departments', icon: Activity },
     ],
     locations: [
       { id: 'state', label: 'State', icon: MapPin },
@@ -40,7 +41,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       { id: 'city', label: 'City', icon: Building2 },
     ],
     management: [
-      { id: 'departments', label: 'Departments', icon: Activity },
       { id: 'appointments', label: 'Appointments', icon: Calendar },
       { id: 'settings', label: 'Settings', icon: Settings },
     ],

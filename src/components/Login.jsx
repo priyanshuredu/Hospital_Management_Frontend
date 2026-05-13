@@ -35,7 +35,7 @@ const Login = () => {
 
     try {
       console.log("form",form)
-      const response = await axios.post('http://localhost:8080/user/log-in', form);
+      const response = await axios.post('http://localhost:5000/user/login', form);
       console.log("Response:", response);
       
       const token = response.data.token;
