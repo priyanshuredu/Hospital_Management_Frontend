@@ -59,8 +59,10 @@ const Login = () => {
         
         if (role === "admin") {
           navigate('/super-admin');
+        } else if(role === 'hospital-admin') {
+          navigate('/hospital');
         } else {
-          navigate('/user');
+          navigation('/user')
         }
       } else {
         setError(response.data.message || 'Login failed');

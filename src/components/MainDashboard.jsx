@@ -190,7 +190,7 @@ const MainDashboard = () => {
             </button>
             <button className="nav-btn-signup" onClick={handleSignUp}>
               <UserPlus size={18} />
-              Hospital Sign Up
+              Register as Hospital
             </button>
           </div>
 
@@ -212,7 +212,7 @@ const MainDashboard = () => {
             <a href="#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
             <div className="mobile-buttons">
               <button className="mobile-login" onClick={handleLogin}>Login</button>
-              <button className="mobile-signup" onClick={handleSignUp}>Hospital Sign Up</button>
+              <button className="mobile-signup" onClick={handleSignUp}>Register as Hospital</button>
             </div>
           </div>
         )}
