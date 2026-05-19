@@ -7,17 +7,23 @@ import Login from './components/Login';
 import MainDashboard from './components/MainDashboard';
 import HospitalRegistration from './components/HospitalRegistration';
 import HospitalLayout from './components/HospitalLayout';
+import NotAuthorized from './components/NotAuthorised';
+import NotFound from './components/NotFound';
 
 function App() {
+  const role = localStorage.getItem('role');
+  const token = localStorage.getItem('token')
+  
   return (
     <ThemeProvider>
       <BrowserRouter>
       <Routes>
         <Route path='/login' element={<Login/>}></Route>
         <Route path='/' element={<MainDashboard/>}></Route>
-        <Route path='/super-admin' element={<MainLayout />}></Route>
         <Route path='/hospital-registeration' element={<HospitalRegistration />}></Route>
-        <Route path='/hospital' element={<HospitalLayout />}></Route>
+        <Route path='/super-admin' element={role === 'admin' ? <MainLayout /> : <NotAuthorized/>}></Route>
+        <Route path='/hospital' element={role === 'hospital' ? <HospitalLayout /> : <NotAuthorized/>}></Route>
+        <Route path='*' element={<NotFound/>}></Route>
       </Routes>
       </BrowserRouter>
     </ThemeProvider>

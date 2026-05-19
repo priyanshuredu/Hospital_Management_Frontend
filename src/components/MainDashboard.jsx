@@ -1,33 +1,33 @@
+// MainDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Hospital, 
-  Users, 
-  Activity, 
-  Calendar, 
-  Bed, 
-  Stethoscope,
-  Ambulance,
-  Microscope,
-  Heart,
-  TrendingUp,
-  Shield,
-  Clock,
-  MapPin,
-  Phone,
-  Mail,
-  ChevronRight
+  Hospital, Users, Activity, Calendar, Bed, Stethoscope,
+  Ambulance, Microscope, Heart, TrendingUp, Shield, Clock,
+  MapPin, Phone, Mail, ChevronRight, LogIn, UserPlus, Menu, X,
+  Star, Award, Globe, CheckCircle, ArrowRight, Video, MessageCircle,
+  FileText, CreditCard, Smartphone, Headphones, Search as SearchIcon
 } from 'lucide-react';
+import HospitalsList from './HospitalsList';
+import DoctorsList from './DoctorsList';
+import HospitalDetailsModal from './HospitalDetailsModal';
+import DoctorDetailsModal from './DoctorDetailsModal';
+import BookingModal from './BookingModal';
 import '../styles/MainDashboard.css';
 
 const MainDashboard = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedHospital, setSelectedHospital] = useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingType, setBookingType] = useState(null);
+  const [bookingItem, setBookingItem] = useState(null);
 
   useEffect(() => {
     setIsVisible(true);
     
-    // Check if user is already logged in
     const token = localStorage.getItem('Token');
     const role = localStorage.getItem('role');
     
@@ -42,153 +42,242 @@ const MainDashboard = () => {
     }
   }, [navigate]);
 
-  const handleGetStarted = () => {
-    navigate('/hospital-registeration');
+  const handleLogin = () => navigate('/login');
+  const handleSignUp = () => navigate('/hospital-registeration');
+  const handleHospitalLogin = () => navigate('/hospital-login');
+
+  const handleViewHospitalDetails = (hospital) => {
+    setSelectedHospital(hospital);
+  };
+
+  const handleBookHospital = (hospital) => {
+    setBookingType('hospital');
+    setBookingItem(hospital);
+    setShowBookingModal(true);
+  };
+
+  const handleViewDoctorDetails = (doctor) => {
+    setSelectedDoctor(doctor);
+  };
+
+  const handleBookDoctor = (doctor) => {
+    setBookingType('doctor');
+    setBookingItem(doctor);
+    setShowBookingModal(true);
+  };
+
+  const handleCloseModals = () => {
+    setSelectedHospital(null);
+    setSelectedDoctor(null);
+  };
+
+  const handleCloseBookingModal = () => {
+    setShowBookingModal(false);
+    setBookingType(null);
+    setBookingItem(null);
   };
 
   const features = [
     {
-      icon: <Hospital size={32} />,
-      title: 'Hospital Management',
-      description: 'Centralized management of all hospitals with real-time status tracking and approvals.'
+      icon: <Calendar size={28} />,
+      title: 'Smart Appointment Booking',
+      description: 'Book appointments with doctors from any hospital instantly with real-time availability.'
     },
     {
-      icon: <Users size={32} />,
-      title: 'Doctor Directory',
-      description: 'Comprehensive database of doctors across all specialties and hospitals.'
+      icon: <Stethoscope size={28} />,
+      title: 'Multi-Specialty Doctors',
+      description: 'Access thousands of verified doctors across various specialties and hospitals.'
     },
     {
-      icon: <Activity size={32} />,
-      title: 'Patient Records',
-      description: 'Secure and organized electronic health records (EHR) management system.'
+      icon: <Video size={28} />,
+      title: 'Telemedicine',
+      description: 'Consult with doctors remotely via video calls from the comfort of your home.'
     },
     {
-      icon: <Calendar size={32} />,
-      title: 'Appointment Scheduling',
-      description: 'Smart scheduling system for patient appointments and doctor availability.'
+      icon: <FileText size={28} />,
+      title: 'Digital Health Records',
+      description: 'Secure access to your medical history, prescriptions, and reports anytime.'
     },
     {
-      icon: <Bed size={32} />,
-      title: 'Bed Management',
-      description: 'Real-time bed availability tracking across all hospital departments.'
+      icon: <Hospital size={28} />,
+      title: 'Hospital Directory',
+      description: 'Find and compare hospitals based on ratings, services, and location.'
     },
     {
-      icon: <Stethoscope size={32} />,
-      title: 'Emergency Services',
-      description: '24/7 emergency response coordination and ambulance tracking.'
+      icon: <CreditCard size={28} />,
+      title: 'Online Payments',
+      description: 'Easy and secure online payments for consultations and medical services.'
     },
     {
-      icon: <Microscope size={32} />,
-      title: 'Lab Management',
-      description: 'Integrated laboratory test tracking and result management.'
+      icon: <MessageCircle size={28} />,
+      title: 'Chat with Doctors',
+      description: 'Quick pre-consultation chats to understand your health concerns better.'
     },
     {
-      icon: <Heart size={32} />,
-      title: 'Pharmacy Integration',
-      description: 'Connected pharmacy system for prescriptions and inventory management.'
+      icon: <Smartphone size={28} />,
+      title: 'Mobile App Support',
+      description: 'Full-featured mobile app for appointments and health tracking on the go.'
     }
   ];
 
   const stats = [
-    { value: '500+', label: 'Hospitals', icon: Hospital, color: '#3b82f6' },
-    { value: '10K+', label: 'Doctors', icon: Users, color: '#10b981' },
-    { value: '50K+', label: 'Patients', icon: Activity, color: '#f59e0b' },
-    { value: '98%', label: 'Satisfaction', icon: Heart, color: '#ef4444' }
+    { value: '1000+', label: 'Hospitals', icon: Hospital, color: '#3b82f6' },
+    { value: '5000+', label: 'Doctors', icon: Stethoscope, color: '#10b981' },
+    { value: '1M+', label: 'Happy Patients', icon: Users, color: '#f59e0b' },
+    { value: '50K+', label: 'Daily Appointments', icon: Calendar, color: '#ef4444' }
   ];
 
-  const recentActivities = [
+  const specialties = [
+    'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 
+    'Dermatology', 'Gynecology', 'Ophthalmology', 'Dentistry',
+    'Psychiatry', 'ENT', 'Urology', 'Endocrinology'
+  ];
+
+  const howItWorks = [
     {
-      id: 1,
-      hospital: 'City Hospital',
-      action: 'New registration request',
-      status: 'pending',
-      time: '5 minutes ago',
-      icon: Hospital
+      step: '01',
+      title: 'Find a Doctor/Hospital',
+      description: 'Search for doctors or hospitals based on specialty, location, and availability',
+      icon: <SearchIcon size={32} />
     },
     {
-      id: 2,
-      hospital: 'Apollo Medical Center',
-      action: 'Emergency bed request',
-      status: 'urgent',
-      time: '15 minutes ago',
-      icon: Bed
+      step: '02',
+      title: 'Book Appointment',
+      description: 'Choose a convenient time slot and book your appointment instantly',
+      icon: <Calendar size={32} />
     },
     {
-      id: 3,
-      hospital: 'Care Hospital',
-      action: 'Ambulance dispatched',
-      status: 'in-progress',
-      time: '1 hour ago',
-      icon: Ambulance
+      step: '03',
+      title: 'Get Consultation',
+      description: 'Visit the hospital or opt for video consultation with the doctor',
+      icon: <Video size={32} />
     },
     {
-      id: 4,
-      hospital: 'Children\'s Hospital',
-      action: 'New department added',
-      status: 'completed',
-      time: '2 hours ago',
-      icon: Activity
+      step: '04',
+      title: 'Follow-up Care',
+      description: 'Receive prescriptions, reports, and schedule follow-up appointments',
+      icon: <Heart size={32} />
     }
   ];
-
-  const topHospitals = [
-    { name: 'Apollo Hospitals', beds: 450, doctors: 320, rating: 4.8 },
-    { name: 'Fortis Healthcare', beds: 380, doctors: 280, rating: 4.7 },
-    { name: 'AIIMS Delhi', beds: 2200, doctors: 850, rating: 4.9 },
-    { name: 'Max Healthcare', beds: 420, doctors: 350, rating: 4.6 }
-  ];
-
-  const getStatusBadge = (status) => {
-    switch(status) {
-      case 'pending':
-        return 'status-pending';
-      case 'urgent':
-        return 'status-urgent';
-      case 'in-progress':
-        return 'status-in-progress';
-      case 'completed':
-        return 'status-completed';
-      default:
-        return '';
-    }
-  };
 
   return (
     <div className="main-dashboard">
-      {/* Hero Section */}
-      <section className="hero-section">
+      <header className={`main-header ${isVisible ? 'header-visible' : ''}`}>
+        <nav className="nav-container">
+          <div className="logo-container" onClick={() => navigate('/')}>
+            <div className="logo-icon">
+              <Hospital size={28} />
+              <Heart size={16} className="logo-heart" />
+            </div>
+            <span className="logo-text">
+              SmarTech<span className="logo-highlight">Health</span>
+            </span>
+          </div>
+
+          <div className="nav-links">
+            <a href="#home">Home</a>
+            <a href="#features">Features</a>
+            <a href="#hospitals">Hospitals</a>
+            <a href="#doctors">Doctors</a>
+            <a href="#how-it-works">How it Works</a>
+            <a href="#contact">Contact</a>
+          </div>
+
+          <div className="nav-buttons">
+            <button className="nav-btn-login" onClick={handleLogin}>
+              <LogIn size={18} />
+              Login
+            </button>
+            <button className="nav-btn-signup" onClick={handleSignUp}>
+              <UserPlus size={18} />
+              Hospital Sign Up
+            </button>
+          </div>
+
+          <button 
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </nav>
+
+        {mobileMenuOpen && (
+          <div className="mobile-menu">
+            <a href="#home" onClick={() => setMobileMenuOpen(false)}>Home</a>
+            <a href="#features" onClick={() => setMobileMenuOpen(false)}>Features</a>
+            <a href="#hospitals" onClick={() => setMobileMenuOpen(false)}>Hospitals</a>
+            <a href="#doctors" onClick={() => setMobileMenuOpen(false)}>Doctors</a>
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How it Works</a>
+            <a href="#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
+            <div className="mobile-buttons">
+              <button className="mobile-login" onClick={handleLogin}>Login</button>
+              <button className="mobile-signup" onClick={handleSignUp}>Hospital Sign Up</button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      <section id="home" className="hero-section">
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <div className={`hero-text ${isVisible ? 'fade-in-up' : ''}`}>
-            <span className="hero-badge">
-              🏥 Complete Hospital Management Solution
-            </span>
+            <div className="hero-badge">
+              <span className="badge-pulse">✨</span>
+              India's Trusted Healthcare Platform
+            </div>
             <h1 className="hero-title">
-              Transform Healthcare Management with
-              <span className="gradient-text"> SmarTech Hospital Portal</span>
+              Your Health, Our Priority
+              <span className="gradient-text"> Connect with Top Doctors & Hospitals</span>
             </h1>
             <p className="hero-description">
-              Centralized platform for managing hospitals, doctors, patients, and appointments. 
-              Streamline operations, enhance patient care, and improve healthcare delivery.
+              Book appointments with 5000+ trusted doctors across 1000+ hospitals. 
+              Get quality healthcare from the comfort of your home or at nearby hospitals.
             </p>
-            <div className="hero-buttons">
-              <button className="btn-primary-hero" onClick={() => navigate('/login')}>
-                Get Started
+            
+            <div className="search-bar">
+              <input 
+                type="text" 
+                placeholder="Search for doctors, specialties, or hospitals..." 
+                className="search-input"
+              />
+              <button className="search-btn">
+                Search
                 <ChevronRight size={18} />
               </button>
-              <button className="btn-secondary-hero" onClick={() => {
-                document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
-              }}>
-                Learn More
+            </div>
+
+            <div className="hero-buttons">
+              <button className="btn-primary-hero" onClick={handleLogin}>
+                Book Appointment
+                <ArrowRight size={18} />
               </button>
+              <button className="btn-secondary-hero" onClick={handleHospitalLogin}>
+                Hospital Login
+              </button>
+            </div>
+
+            <div className="trust-badges">
+              <div className="trust-item">
+                <Shield size={16} />
+                <span>ISO Certified</span>
+              </div>
+              <div className="trust-item">
+                <CheckCircle size={16} />
+                <span>Verified Doctors</span>
+              </div>
+              <div className="trust-item">
+                <Lock size={16} />
+                <span>Secure Payments</span>
+              </div>
             </div>
           </div>
           
           <div className={`hero-stats ${isVisible ? 'fade-in-up-delay' : ''}`}>
             {stats.map((stat, index) => (
               <div key={index} className="stat-card-hero">
-                <div className="stat-icon-hero" style={{ background: `${stat.color}20`, color: stat.color }}>
-                  <stat.icon size={24} />
+                <div className="stat-icon-hero" style={{ background: `${stat.color}15`, color: stat.color }}>
+                  <stat.icon size={26} />
                 </div>
                 <div>
                   <div className="stat-value-hero">{stat.value}</div>
@@ -200,21 +289,22 @@ const MainDashboard = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section id="features" className="features-section">
         <div className="container">
           <div className="section-header">
-            <span className="section-badge">Key Features</span>
-            <h2 className="section-title">Everything You Need for Modern Healthcare</h2>
+            <span className="section-badge">Why Choose Us</span>
+            <h2 className="section-title">Comprehensive Healthcare Solutions</h2>
             <p className="section-subtitle">
-              Comprehensive features to manage all aspects of hospital operations efficiently.
+              Everything you need for modern healthcare management in one platform
             </p>
           </div>
 
           <div className="features-grid">
             {features.map((feature, index) => (
               <div key={index} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
+                <div className="feature-icon-wrapper">
+                  <div className="feature-icon">{feature.icon}</div>
+                </div>
                 <h3 className="feature-title">{feature.title}</h3>
                 <p className="feature-description">{feature.description}</p>
               </div>
@@ -223,175 +313,238 @@ const MainDashboard = () => {
         </div>
       </section>
 
-      {/* Recent Activities & Top Hospitals Section */}
-      <section className="activities-section">
-        <div className="container">
-          <div className="activities-grid">
-            {/* Recent Activities */}
-            <div className="recent-activities">
-              <div className="section-header small">
-                <h3 className="section-title-small">Recent Activities</h3>
-                <p className="section-subtitle-small">Latest updates from hospitals</p>
-              </div>
-              <div className="activities-list">
-                {recentActivities.map((activity) => {
-                  const IconComponent = activity.icon;
-                  return (
-                    <div key={activity.id} className="activity-item">
-                      <div className="activity-icon">
-                        <IconComponent size={20} />
-                      </div>
-                      <div className="activity-content">
-                        <div className="activity-header">
-                          <span className="activity-hospital">{activity.hospital}</span>
-                          <span className={`activity-status ${getStatusBadge(activity.status)}`}>
-                            {activity.status}
-                          </span>
-                        </div>
-                        <p className="activity-action">{activity.action}</p>
-                        <span className="activity-time">{activity.time}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+      <HospitalsList 
+        onViewDetails={handleViewHospitalDetails}
+        onBookAppointment={handleBookHospital}
+      />
 
-            {/* Top Hospitals */}
-            <div className="top-hospitals">
-              <div className="section-header small">
-                <h3 className="section-title-small">Top Rated Hospitals</h3>
-                <p className="section-subtitle-small">Best performing healthcare centers</p>
+      <DoctorsList 
+        onViewDetails={handleViewDoctorDetails}
+        onBookAppointment={handleBookDoctor}
+      />
+
+      <section className="specialties-section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-badge">Medical Specialties</span>
+            <h2 className="section-title">Expert Care Across All Specialties</h2>
+            <p className="section-subtitle">
+              Find specialized doctors for every medical condition
+            </p>
+          </div>
+
+          <div className="specialties-grid">
+            {specialties.map((specialty, index) => (
+              <div key={index} className="specialty-card">
+                <span>{specialty}</span>
               </div>
-              <div className="hospitals-list">
-                {topHospitals.map((hospital, index) => (
-                  <div key={index} className="hospital-item">
-                    <div className="hospital-rank">{index + 1}</div>
-                    <div className="hospital-info">
-                      <div className="hospital-name">{hospital.name}</div>
-                      <div className="hospital-stats">
-                        <span>
-                          <Users size={12} />
-                          {hospital.doctors} Doctors
-                        </span>
-                        <span>
-                          <Bed size={12} />
-                          {hospital.beds} Beds
-                        </span>
-                      </div>
-                    </div>
-                    <div className="hospital-rating">
-                      <span className="rating-star">⭐</span>
-                      <span>{hospital.rating}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="how-it-works">
+      <section id="how-it-works" className="how-it-works">
         <div className="container">
           <div className="section-header">
             <span className="section-badge">Simple Process</span>
-            <h2 className="section-title">How Hospital Management Works</h2>
+            <h2 className="section-title">Book Appointment in 4 Easy Steps</h2>
             <p className="section-subtitle">
-              Easy steps to start managing your healthcare facility
+              Get the care you need with our streamlined booking process
             </p>
           </div>
 
           <div className="steps-container">
-            <div className="step">
-              <div className="step-number">1</div>
-              <div className="step-icon">🏥</div>
-              <h3 className="step-title">Register Hospital</h3>
-              <p className="step-description">Add hospital details and get verified</p>
-            </div>
-            <div className="step-arrow">→</div>
-            <div className="step">
-              <div className="step-number">2</div>
-              <div className="step-icon">👨‍⚕️</div>
-              <h3 className="step-title">Add Staff</h3>
-              <p className="step-description">Register doctors, nurses, and support staff</p>
-            </div>
-            <div className="step-arrow">→</div>
-            <div className="step">
-              <div className="step-number">3</div>
-              <div className="step-icon">📋</div>
-              <h3 className="step-title">Manage Patients</h3>
-              <p className="step-description">Schedule appointments and track records</p>
-            </div>
-            <div className="step-arrow">→</div>
-            <div className="step">
-              <div className="step-number">4</div>
-              <div className="step-icon">📊</div>
-              <h3 className="step-title">Monitor Analytics</h3>
-              <p className="step-description">Track performance and generate reports</p>
+            {howItWorks.map((step, index) => (
+              <React.Fragment key={index}>
+                <div className="step-card">
+                  <div className="step-number-badge">{step.step}</div>
+                  <div className="step-icon-container">{step.icon}</div>
+                  <h3 className="step-title">{step.title}</h3>
+                  <p className="step-description">{step.description}</p>
+                </div>
+                {index < howItWorks.length - 1 && (
+                  <div className="step-arrow">→</div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="hospital-cta-section">
+        <div className="hospital-cta-content">
+          <div className="cta-left">
+            <div className="cta-badge">For Hospitals</div>
+            <h2 className="cta-title">List Your Hospital on Our Platform</h2>
+            <p className="cta-description">
+              Join 1000+ hospitals already using SmarTechHealth to manage appointments, 
+              reach more patients, and streamline operations.
+            </p>
+            <ul className="cta-benefits">
+              <li><CheckCircle size={18} /> Increase patient reach by 200%</li>
+              <li><CheckCircle size={18} /> Free 30-day trial with full features</li>
+              <li><CheckCircle size={18} /> Dedicated account manager support</li>
+              <li><CheckCircle size={18} /> Advanced analytics and insights</li>
+            </ul>
+            <button className="cta-register-btn" onClick={handleSignUp}>
+              Register Your Hospital Now
+              <ArrowRight size={18} />
+            </button>
+          </div>
+          <div className="cta-right">
+            <div className="stats-card">
+              <div className="stats-item">
+                <div className="stats-value">98%</div>
+                <div className="stats-label">Patient Satisfaction</div>
+              </div>
+              <div className="stats-item">
+                <div className="stats-value">50K+</div>
+                <div className="stats-label">Daily Appointments</div>
+              </div>
+              <div className="stats-item">
+                <div className="stats-value">24/7</div>
+                <div className="stats-label">Support Available</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="cta-content">
-          <h2 className="cta-title">Ready to Transform Your Hospital Management?</h2>
-          <p className="cta-description">
-            Join hundreds of hospitals already using SmarTech to improve patient care and operational efficiency.
-          </p>
-          <button className="btn-cta" onClick={handleGetStarted}>
-            Start Free Trial
-            <ChevronRight size={18} />
-          </button>
+      <section className="testimonials-section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-badge">Testimonials</span>
+            <h2 className="section-title">What Our Users Say</h2>
+            <p className="section-subtitle">
+              Trusted by millions of patients and healthcare providers
+            </p>
+          </div>
+
+          <div className="testimonials-grid">
+            <div className="testimonial-card">
+              <div className="testimonial-quote">"</div>
+              <p className="testimonial-text">
+                Amazing platform! Found the best cardiologist for my father within minutes. 
+                The video consultation feature is a lifesaver.
+              </p>
+              <div className="testimonial-author">
+                <div className="author-avatar">RK</div>
+                <div>
+                  <div className="author-name">Rahul Kumar</div>
+                  <div className="author-title">Patient</div>
+                </div>
+              </div>
+            </div>
+            <div className="testimonial-card">
+              <div className="testimonial-quote">"</div>
+              <p className="testimonial-text">
+                As a hospital administrator, this platform has revolutionized how we manage 
+                appointments. Patient flow has improved significantly.
+              </p>
+              <div className="testimonial-author">
+                <div className="author-avatar">DS</div>
+                <div>
+                  <div className="author-name">Dr. Sharmila Das</div>
+                  <div className="author-title">Hospital Admin</div>
+                </div>
+              </div>
+            </div>
+            <div className="testimonial-card">
+              <div className="testimonial-quote">"</div>
+              <p className="testimonial-text">
+                The digital records feature is fantastic! I can access all my medical history 
+                anytime, anywhere. Highly recommended!
+              </p>
+              <div className="testimonial-author">
+                <div className="author-avatar">PP</div>
+                <div>
+                  <div className="author-name">Priya Patel</div>
+                  <div className="author-title">Patient</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer">
+      <section className="download-app-section">
+        <div className="download-app-content">
+          <div className="app-info">
+            <div className="app-badge">Mobile App</div>
+            <h2 className="app-title">Healthcare at Your Fingertips</h2>
+            <p className="app-description">
+              Download our mobile app for easy appointment booking, health tracking, 
+              and instant doctor consultations.
+            </p>
+            <div className="app-buttons">
+              <button className="app-store-btn">
+                <Smartphone size={20} />
+                App Store
+              </button>
+              <button className="play-store-btn">
+                <Smartphone size={20} />
+                Google Play
+              </button>
+            </div>
+          </div>
+          <div className="app-mockup">
+            <div className="mockup-phone">
+              <div className="mockup-screen"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer id="contact" className="footer">
         <div className="footer-content">
           <div className="footer-brand">
             <div className="footer-logo">
               <Hospital size={24} />
-              <span>SmarTech Hospital</span>
+              <Heart size={12} className="footer-heart" />
+              <span>SmarTechHealth</span>
             </div>
             <p className="footer-description">
-              Intelligent hospital management solution for modern healthcare facilities.
+              India's most trusted healthcare platform connecting patients with top doctors and hospitals.
             </p>
             <div className="footer-contact">
               <div className="contact-item">
                 <Phone size={14} />
-                <span>+1 (555) 123-4567</span>
+                <span>+91 1800-123-4567</span>
               </div>
               <div className="contact-item">
                 <Mail size={14} />
-                <span>support@smartechnospital.com</span>
+                <span>support@smartechealth.com</span>
+              </div>
+              <div className="contact-item">
+                <MapPin size={14} />
+                <span>Mumbai, India</span>
               </div>
             </div>
           </div>
           <div className="footer-links">
             <div className="footer-column">
-              <h4>Product</h4>
-              <a href="#features">Features</a>
-              <a href="#">Pricing</a>
-              <a href="#">Demo</a>
-              <a href="#">Integrations</a>
+              <h4>For Patients</h4>
+              <a href="#">Find Doctors</a>
+              <a href="#">Find Hospitals</a>
+              <a href="#">Book Appointment</a>
+              <a href="#">Video Consult</a>
+              <a href="#">Health Records</a>
+            </div>
+            <div className="footer-column">
+              <h4>For Hospitals</h4>
+              <a href="#">List Your Hospital</a>
+              <a href="#">Pricing Plans</a>
+              <a href="#">API Integration</a>
+              <a href="#">Success Stories</a>
+              <a href="#">Support</a>
             </div>
             <div className="footer-column">
               <h4>Company</h4>
               <a href="#">About Us</a>
-              <a href="#">Blog</a>
               <a href="#">Careers</a>
+              <a href="#">Blog</a>
               <a href="#">Press</a>
-            </div>
-            <div className="footer-column">
-              <h4>Resources</h4>
-              <a href="#">Help Center</a>
-              <a href="#">Documentation</a>
-              <a href="#">API Reference</a>
-              <a href="#">Status</a>
+              <a href="#">Contact Us</a>
             </div>
             <div className="footer-column">
               <h4>Legal</h4>
@@ -399,20 +552,48 @@ const MainDashboard = () => {
               <a href="#">Terms of Service</a>
               <a href="#">Security</a>
               <a href="#">Compliance</a>
+              <a href="#">HIPAA</a>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 SmarTech Hospital Management System. All rights reserved.</p>
+          <p>&copy; 2026 SmarTechHealth. All rights reserved.</p>
           <div className="footer-bottom-links">
             <a href="#">Privacy</a>
             <a href="#">Terms</a>
             <a href="#">Sitemap</a>
+            <a href="#">Cookie Policy</a>
           </div>
         </div>
       </footer>
+
+      {selectedHospital && (
+        <HospitalDetailsModal 
+          hospital={selectedHospital} 
+          onClose={handleCloseModals}
+          onBookAppointment={() => handleBookHospital(selectedHospital)}
+        />
+      )}
+
+      {selectedDoctor && (
+        <DoctorDetailsModal 
+          doctor={selectedDoctor} 
+          onClose={handleCloseModals}
+          onBookAppointment={() => handleBookDoctor(selectedDoctor)}
+        />
+      )}
+
+      {showBookingModal && bookingItem && (
+        <BookingModal 
+          item={bookingItem}
+          type={bookingType}
+          onClose={handleCloseBookingModal}
+        />
+      )}
     </div>
   );
 };
+
+const Lock = ({ size }) => <span>🔒</span>;
 
 export default MainDashboard;

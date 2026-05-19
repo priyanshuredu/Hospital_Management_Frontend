@@ -319,8 +319,10 @@ const DoctorRegistration = () => {
           <div className="header-icon">
             <Stethoscope size={32} />
           </div>
+          <div>
           <h2>Doctor Registration</h2>
           <p>Register a new doctor to join our medical team</p>
+          </div>
         </div>
 
         {/* Success Alert */}

@@ -1,29 +1,213 @@
 import React, { useState } from 'react';
 import { useTheme } from './ThemeContext';
-import { User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Save, Camera, X } from 'lucide-react';
+import axios from 'axios';
 import '../styles/EditProfile.css';
 
 const EditProfile = () => {
   const { isDarkMode } = useTheme();
+  
+  // Get user data from localStorage
+  const userId = localStorage.getItem('User Id');
+  const token = localStorage.getItem('Token');
+  const storedUsername = localStorage.getItem('User Name');
+  const storedEmail = localStorage.getItem('email');
+
   const [formData, setFormData] = useState({
-    username: 'John Doe',
-    email: 'john.doe@example.com',
+    username: storedUsername || 'John Doe',
+    email: storedEmail || 'john.doe@example.com',
     phone: '+1 234 567 8900',
     location: 'New York, USA',
     bio: 'Hospital Administrator with 10+ years of experience'
   });
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  
+  // State for profile image modal
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError] = useState('');
+  const [currentProfileImage, setCurrentProfileImage] = useState(localStorage.getItem('ProfileImage') || null);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    if (error) setError('');
+    if (success) setSuccess('');
   };
 
-  const handleSubmit = (e) => {
+  // Handle profile data update
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Profile updated:', formData);
-    alert('Profile updated successfully!');
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/user/profile-update`,
+        {
+          username: formData.username,
+          email: formData.email,
+          phone: formData.phone,
+          location: formData.location,
+          bio: formData.bio
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      if (response.data.message === "User updated successfully") {
+        // Update localStorage with new data
+        localStorage.setItem('User Name', formData.username);
+        localStorage.setItem('email', formData.email);
+        
+        setSuccess('Profile updated successfully!');
+        
+        setTimeout(() => {
+          setSuccess('');
+        }, 3000);
+      } else {
+        setError(response.data.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error("Update profile error:", error);
+      setError(error.response?.data?.message || 'Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle image selection for profile picture
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        setImageError('Please select a valid image file (JPEG, PNG, JPG, GIF)');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setImageError('Image size should be less than 5MB');
+        return;
+      }
+      
+      setSelectedImage(file);
+      setImageError('');
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle image upload for profile picture
+  const handleImageUpload = async () => {
+    if (!selectedImage) {
+      setImageError('Please select an image first');
+      return;
+    }
+    
+    setImageUploading(true);
+    setImageError('');
+    
+    try {
+      const formData = new FormData();
+      formData.append('image', selectedImage);
+      
+      const response = await axios.patch(
+        `http://localhost:5000/user/update-profile-img`,
+        formData,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          }
+        }
+      );
+      
+      if (response.data.message === "Profile image updated successfully.") {
+        setSuccess('Profile image updated successfully!');
+        
+        // Update the current profile image preview
+        if (imagePreview) {
+          setCurrentProfileImage(imagePreview);
+          localStorage.setItem('ProfileImage', imagePreview);
+        }
+        
+        setIsImageModalOpen(false);
+        setSelectedImage(null);
+        setImagePreview(null);
+        
+        setTimeout(() => {
+          setSuccess('');
+        }, 3000);
+      } else {
+        setImageError(response.data.message || 'Failed to upload profile image.');
+      }
+    } catch (error) {
+      console.error("Image upload error:", error);
+      setImageError(error.response?.data?.message || 'Failed to upload image. Please try again.');
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  // Close profile image modal
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+    setSelectedImage(null);
+    setImagePreview(null);
+    setImageError('');
+  };
+
+  // Remove profile image
+  const handleRemoveImage = async () => {
+    setImageUploading(true);
+    
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/user/remove-profile-image`,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          }
+        }
+      );
+      
+      if (response.data.message === "Profile image removed successfully") {
+        setCurrentProfileImage(null);
+        localStorage.removeItem('ProfileImage');
+        setSuccess('Profile image removed successfully!');
+        setIsImageModalOpen(false);
+        
+        setTimeout(() => {
+          setSuccess('');
+        }, 3000);
+      } else {
+        setImageError(response.data.message || 'Failed to remove profile image');
+      }
+    } catch (error) {
+      console.error("Remove image error:", error);
+      setImageError(error.response?.data?.message || 'Failed to remove image');
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   return (
@@ -33,13 +217,36 @@ const EditProfile = () => {
         <p>Update your personal information</p>
       </div>
 
+      {error && (
+        <div className="error-message">
+          <span>⚠️</span> {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="success-message">
+          <span>✓</span> {success}
+        </div>
+      )}
+
       <div className="profile-content">
         <div className="profile-avatar-section">
           <div className="avatar-wrapper">
             <div className="avatar">
-              <User size={48} />
+              {currentProfileImage ? (
+                <img 
+                  src={currentProfileImage} 
+                  alt="Profile" 
+                  className="avatar-image"
+                />
+              ) : (
+                <User size={48} />
+              )}
             </div>
-            <button className="change-photo-btn">
+            <button 
+              className="change-photo-btn"
+              onClick={() => setIsImageModalOpen(true)}
+            >
               <Camera size={16} />
               Change Photo
             </button>
@@ -58,6 +265,7 @@ const EditProfile = () => {
               value={formData.username}
               onChange={handleChange}
               required
+              disabled={loading}
             />
           </div>
 
@@ -72,6 +280,7 @@ const EditProfile = () => {
               value={formData.email}
               onChange={handleChange}
               required
+              disabled={loading}
             />
           </div>
 
@@ -85,6 +294,7 @@ const EditProfile = () => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
+              disabled={loading}
             />
           </div>
 
@@ -98,6 +308,7 @@ const EditProfile = () => {
               name="location"
               value={formData.location}
               onChange={handleChange}
+              disabled={loading}
             />
           </div>
 
@@ -108,15 +319,100 @@ const EditProfile = () => {
               rows="4"
               value={formData.bio}
               onChange={handleChange}
+              disabled={loading}
             />
           </div>
 
-          <button type="submit" className="save-btn">
+          <button type="submit" className="save-btn" disabled={loading}>
             <Save size={18} />
-            Save Changes
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       </div>
+
+      {/* Modal for profile image upload */}
+      {isImageModalOpen && (
+        <div className="modal-overlay" onClick={closeImageModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Update Profile Picture</h3>
+              <button className="modal-close" onClick={closeImageModal}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {imagePreview ? (
+                <div className="image-preview">
+                  <img src={imagePreview} alt="Preview" />
+                  <button 
+                    className="change-image-btn"
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setImagePreview(null);
+                      document.getElementById('image-input').value = '';
+                    }}
+                  >
+                    Remove Selection
+                  </button>
+                </div>
+              ) : (
+                <div className="upload-area">
+                  <label htmlFor="image-input" className="upload-label">
+                    <div className="upload-icon">📸</div>
+                    <p>Click to select an image</p>
+                    <small>JPEG, PNG, JPG, GIF (Max 5MB)</small>
+                  </label>
+                  <input
+                    id="image-input"
+                    type="file"
+                    accept="image/jpeg,image/png,image/jpg,image/gif"
+                    onChange={handleImageSelect}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+              )}
+              
+              {currentProfileImage && !imagePreview && (
+                <div className="current-image-section">
+                  <p>Current Profile Image:</p>
+                  <div className="current-image-preview">
+                    <img src={currentProfileImage} alt="Current profile" />
+                  </div>
+                </div>
+              )}
+              
+              {imageError && (
+                <div className="modal-error">
+                  <span>⚠️</span> {imageError}
+                </div>
+              )}
+            </div>
+            
+            <div className="modal-footer">
+              {currentProfileImage && !imagePreview && (
+                <button 
+                  className="remove-btn" 
+                  onClick={handleRemoveImage}
+                  disabled={imageUploading}
+                >
+                  {imageUploading ? 'Removing...' : 'Remove Image'}
+                </button>
+              )}
+              <button className="cancel-btn" onClick={closeImageModal}>
+                Cancel
+              </button>
+              <button 
+                className="upload-btn" 
+                onClick={handleImageUpload}
+                disabled={!selectedImage || imageUploading}
+              >
+                {imageUploading ? 'Uploading...' : 'Update Image'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

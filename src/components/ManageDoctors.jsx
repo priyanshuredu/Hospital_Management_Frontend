@@ -63,6 +63,7 @@ const ManageDoctors = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/doctor/all`);
+      console.log("first",response)
       let doctorsArray = [];
       if (response.data && response.data.success && Array.isArray(response.data.doctors)) {
         doctorsArray = response.data.doctors;
@@ -130,7 +131,7 @@ const ManageDoctors = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/doctor/delete/${selectedDoctor._id}`);
+      await axios.delete(`${API_URL}/doctor/${selectedDoctor._id}`);
       fetchDoctors();
       setIsDeleteModalOpen(false);
       setSelectedDoctor(null);
@@ -144,7 +145,7 @@ const ManageDoctors = () => {
     setUpdateError('');
     try {
       const response = await axios.put(`${API_URL}/doctor/update/${selectedDoctor._id}`, editFormData);
-      if (response.data && response.data.success) {
+      if (response.data && response.data.updatedDoctor) {
         setUpdateSuccess(true);
         setTimeout(() => setUpdateSuccess(false), 3000);
         fetchDoctors();
@@ -241,8 +242,8 @@ const ManageDoctors = () => {
                     <td>{doctor.sub_department?.sub_departmentName || doctor.sub_department?.name || 'N/A'}</td>
                     <td><Mail size={14} /> {doctor.email}</td>
                     <td><Phone size={14} /> {doctor.phone}</td>
-                    <td><Clock size={14} /> {doctor.experience} years</td>
-                    <td><DollarSign size={14} /> ${doctor.consultation_fee}</td>
+                    <td> {doctor.experience} years</td>
+                    <td><DollarSign size={14} /> {doctor.consultation_fee}</td>
                     <td>
                       <div className="action-buttons">
                         <button onClick={() => handleViewDoctor(doctor)} className="action-btn view">

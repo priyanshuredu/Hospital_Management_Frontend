@@ -393,7 +393,7 @@
 }
 
 .profile-item.active {
-  background: #667eea;
+  background: rgba(102, 126, 234, 0.1);
   color: white;
 }
 

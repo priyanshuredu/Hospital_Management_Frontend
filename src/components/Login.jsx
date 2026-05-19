@@ -134,7 +134,7 @@ const Login = () => {
                   setFieldErrors({ ...fieldErrors, email: '' });
                   setError('');
                 }}
-                placeholder="Enter your email"
+                placeholder="     Enter your email"
                 disabled={loading}
                 className={fieldErrors.email ? 'error' : ''}
               />
@@ -157,7 +157,7 @@ const Login = () => {
                   setFieldErrors({ ...fieldErrors, password: '' });
                   setError('');
                 }}
-                placeholder="Enter your password"
+                placeholder="     Enter your password"
                 disabled={loading}
                 className={fieldErrors.password ? 'error' : ''}
               />
