@@ -10,6 +10,7 @@ import HospitalLayout from './components/HospitalLayout';
 import NotAuthorized from './components/NotAuthorised';
 import NotFound from './components/NotFound';
 import ForgotPassword from './components/ForgotPassword';
+import DoctorLayout from './components/DoctorLayout';
 
 function App() {
   const role = localStorage.getItem('role');
@@ -25,6 +26,7 @@ function App() {
         <Route path='/hospital-registeration' element={<HospitalRegistration />}></Route>
         <Route path='/super-admin' element={role === 'admin' ? <MainLayout /> : <NotAuthorized/>}></Route>
         <Route path='/hospital' element={role === 'hospital-admin' ? <HospitalLayout /> : <NotAuthorized/>}></Route>
+        <Route path='/doctor' element={<DoctorLayout/>}></Route>
         <Route path='*' element={<NotFound/>}></Route>
       </Routes>
       </BrowserRouter>
