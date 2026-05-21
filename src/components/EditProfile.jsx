@@ -7,11 +7,11 @@ import '../styles/EditProfile.css';
 const EditProfile = () => {
   const { isDarkMode } = useTheme();
   
-  // Get user data from localStorage
-  const userId = localStorage.getItem('User Id');
-  const token = localStorage.getItem('Token');
-  const storedUsername = localStorage.getItem('User Name');
-  const storedEmail = localStorage.getItem('email');
+  // Get user data from sessionStorage
+  const userId = sessionStorage.getItem('User Id');
+  const token = sessionStorage.getItem('Token');
+  const storedUsername = sessionStorage.getItem('User Name');
+  const storedEmail = sessionStorage.getItem('email');
 
   const [formData, setFormData] = useState({
     username: storedUsername || 'John Doe',
@@ -31,7 +31,7 @@ const EditProfile = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState('');
-  const [currentProfileImage, setCurrentProfileImage] = useState(localStorage.getItem('ProfileImage') || null);
+  const [currentProfileImage, setCurrentProfileImage] = useState(sessionStorage.getItem('ProfileImage') || null);
 
   const handleChange = (e) => {
     setFormData({
@@ -68,9 +68,9 @@ const EditProfile = () => {
       );
 
       if (response.data.message === "User updated successfully") {
-        // Update localStorage with new data
-        localStorage.setItem('User Name', formData.username);
-        localStorage.setItem('email', formData.email);
+        // Update sessionStorage with new data
+        sessionStorage.setItem('User Name', formData.username);
+        sessionStorage.setItem('email', formData.email);
         
         setSuccess('Profile updated successfully!');
         
@@ -147,7 +147,7 @@ const EditProfile = () => {
         // Update the current profile image preview
         if (imagePreview) {
           setCurrentProfileImage(imagePreview);
-          localStorage.setItem('ProfileImage', imagePreview);
+          sessionStorage.setItem('ProfileImage', imagePreview);
         }
         
         setIsImageModalOpen(false);
@@ -192,7 +192,7 @@ const EditProfile = () => {
       
       if (response.data.message === "Profile image removed successfully") {
         setCurrentProfileImage(null);
-        localStorage.removeItem('ProfileImage');
+        sessionStorage.removeItem('ProfileImage');
         setSuccess('Profile image removed successfully!');
         setIsImageModalOpen(false);
         

@@ -22,10 +22,12 @@ import {
   Stethoscope,
   Users,
   PlusCircle,
-  List
+  List,
+  FlaskConical
 } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 import '../styles/HospitalSidebar.css';
+import { logout } from '../services/logout';
 
 const HospitalSidebar = ({ activeTab, setActiveTab }) => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -37,7 +39,7 @@ const HospitalSidebar = ({ activeTab, setActiveTab }) => {
   const menuItems = {
     main: [
       { id: 'home', label: 'Home', icon: Home },
-      { id: 'hospitals', label: 'Hospitals', icon: HospitalIcon },
+      { id: 'lab', label: 'Labs', icon: FlaskConical },
     ],
     doctor: [
       { id: 'add-doctor', label: 'Add Doctor', icon: PlusCircle },
@@ -206,7 +208,7 @@ const HospitalSidebar = ({ activeTab, setActiveTab }) => {
                 </button>
               ))}
               <hr className="dropdown-divider" />
-              <button className="profile-item logout" onClick={() => console.log('Logout clicked')}>
+              <button className="profile-item logout" onClick={() => logout()}>
                 <LogOut size={18} />
                 <span>Logout</span>
               </button>

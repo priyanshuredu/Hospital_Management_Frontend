@@ -28,8 +28,8 @@ const MainDashboard = () => {
   useEffect(() => {
     setIsVisible(true);
     
-    const token = localStorage.getItem('Token');
-    const role = localStorage.getItem('role');
+    const token = sessionStorage.getItem('Token');
+    const role = sessionStorage.getItem('role');
     
     if (token && role) {
       setTimeout(() => {

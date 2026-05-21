@@ -1,0 +1,637 @@
+.lab-tests-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.tests-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tests-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .tests-header h1 {
+  color: white;
+}
+
+.tests-header p {
+  margin: 0;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.lab-assistant-layout.dark .tests-header p {
+  color: #aaa;
+}
+
+.header-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #667eea;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lab-assistant-layout.dark .stat-chip {
+  background: #16213e;
+  color: #aaa;
+}
+
+/* Filters Bar */
+.filters-bar {
+  margin-bottom: 2rem;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+}
+
+.lab-assistant-layout.dark .search-box {
+  background: #16213e;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  background: transparent;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .search-box input {
+  color: white;
+}
+
+.search-box input::placeholder {
+  color: #999;
+}
+
+.clear-search {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+/* Tests Grid */
+.tests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Test Card */
+.test-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.lab-assistant-layout.dark .test-card {
+  background: #16213e;
+}
+
+.test-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.test-card-header {
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lab-assistant-layout.dark .test-card-header {
+  background: #1a1a2e;
+}
+
+.patient-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .patient-info h3 {
+  color: white;
+}
+
+.patient-id {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.lab-assistant-layout.dark .patient-id {
+  color: #aaa;
+}
+
+.test-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.test-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.test-badge.progress {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.test-badge.completed {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.test-card-body {
+  padding: 1.25rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.lab-assistant-layout.dark .test-card-body {
+  border-bottom-color: #2c3e50;
+}
+
+.test-detail {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.test-detail strong {
+  color: #555;
+}
+
+.lab-assistant-layout.dark .test-detail strong {
+  color: #aaa;
+}
+
+.test-detail span {
+  color: #666;
+}
+
+.lab-assistant-layout.dark .test-detail span {
+  color: #ccc;
+}
+
+.test-result {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.lab-assistant-layout.dark .test-result {
+  background: #1a1a2e;
+}
+
+.test-result strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.test-result p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.lab-assistant-layout.dark .test-result p {
+  color: #ccc;
+}
+
+.test-card-footer {
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.test-card-footer button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-start {
+  background: #0d6efd;
+  color: white;
+}
+
+.btn-start:hover {
+  background: #0b5ed7;
+}
+
+.btn-view {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-view:hover {
+  background: #5c636a;
+}
+
+.btn-result {
+  background: #28a745;
+  color: white;
+}
+
+.btn-result:hover {
+  background: #1e7e34;
+}
+
+.btn-view-result {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-view-result:hover {
+  background: #138496;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+.lab-assistant-layout.dark .modal-content {
+  background: #16213e;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.lab-assistant-layout.dark .modal-header {
+  background: #16213e;
+  border-bottom-color: #2c3e50;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .modal-header h2 {
+  color: white;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+
+.close-modal:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.test-info {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.lab-assistant-layout.dark .test-info {
+  background: #1a1a2e;
+}
+
+.test-info p {
+  margin: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.test-info p:first-child {
+  margin-top: 0;
+}
+
+.test-info p:last-child {
+  margin-bottom: 0;
+}
+
+.test-info strong {
+  color: #555;
+}
+
+.lab-assistant-layout.dark .test-info strong {
+  color: #aaa;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.lab-assistant-layout.dark .form-group label {
+  color: #aaa;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.lab-assistant-layout.dark .form-group textarea {
+  background: #1a1a2e;
+  border-color: #2c3e50;
+  color: white;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  position: sticky;
+  bottom: 0;
+  background: white;
+}
+
+.lab-assistant-layout.dark .modal-footer {
+  background: #16213e;
+  border-top-color: #2c3e50;
+}
+
+.btn-secondary,
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.pagination button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lab-assistant-layout.dark .pagination button {
+  background: #16213e;
+  border-color: #2c3e50;
+  color: white;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.page-numbers button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
+}
+
+.page-numbers button.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  background: white;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.lab-assistant-layout.dark .loading-container {
+  background: #16213e;
+}
+
+.loading-container p {
+  margin-top: 1rem;
+  color: #666;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tests-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .test-card-header {
+    flex-direction: column;
+  }
+  
+  .test-card-footer {
+    flex-direction: column;
+  }
+  
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+}

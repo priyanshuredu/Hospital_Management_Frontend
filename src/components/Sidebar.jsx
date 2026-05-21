@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 import '../styles/Sidebar.css';
+import { logout } from '../services/logout';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -170,7 +171,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                 </button>
               ))}
               <hr className="dropdown-divider" />
-              <button className="profile-item logout">
+              <button className="profile-item logout" onClick={() => logout()}>
                 <LogOut size={18} />
                 <span>Logout</span>
               </button>

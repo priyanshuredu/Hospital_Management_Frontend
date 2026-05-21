@@ -1,0 +1,408 @@
+.lab-dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.dashboard-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .dashboard-header h1 {
+  color: white;
+}
+
+.dashboard-header p {
+  margin: 0;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.lab-assistant-layout.dark .dashboard-header p {
+  color: #aaa;
+}
+
+.date-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  color: #666;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lab-assistant-layout.dark .date-display {
+  background: #16213e;
+  color: #aaa;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.lab-assistant-layout.dark .stat-card {
+  background: #16213e;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-info h3 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.stat-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.lab-assistant-layout.dark .stat-info p {
+  color: #aaa;
+}
+
+.stat-card.pending .stat-info h3 {
+  color: #856404;
+}
+
+.stat-card.progress .stat-info h3 {
+  color: #084298;
+}
+
+.stat-card.completed .stat-info h3 {
+  color: #0f5132;
+}
+
+.stat-card.info .stat-info h3 {
+  color: #842029;
+}
+
+/* Additional Stats */
+.additional-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-box {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.lab-assistant-layout.dark .stat-box {
+  background: #16213e;
+}
+
+.stat-box svg {
+  color: #667eea;
+}
+
+.stat-box h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .stat-box h4 {
+  color: white;
+}
+
+.stat-box p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.lab-assistant-layout.dark .stat-box p {
+  color: #aaa;
+}
+
+/* Recent Tests Section */
+.recent-tests-section {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lab-assistant-layout.dark .recent-tests-section {
+  background: #16213e;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .section-header h2 {
+  color: white;
+}
+
+.view-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #667eea;
+  border-radius: 6px;
+  color: #667eea;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.view-all-btn:hover {
+  background: #667eea;
+  color: white;
+}
+
+/* Tests Table */
+.tests-table-container {
+  overflow-x: auto;
+}
+
+.tests-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tests-table th {
+  text-align: left;
+  padding: 12px;
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.875rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.lab-assistant-layout.dark .tests-table th {
+  background: #1a1a2e;
+  color: #aaa;
+  border-bottom-color: #2c3e50;
+}
+
+.tests-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.lab-assistant-layout.dark .tests-table td {
+  border-bottom-color: #2c3e50;
+  color: #aaa;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge.progress {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.badge.completed {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge.approved {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+/* Action Buttons */
+.action-btn {
+  padding: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.action-btn.view {
+  color: #667eea;
+}
+
+.action-btn.view:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.no-data {
+  text-align: center;
+  color: #999;
+  padding: 2rem;
+}
+
+/* Quick Actions */
+.quick-actions {
+  margin-top: 1rem;
+}
+
+.quick-actions h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .quick-actions h3 {
+  color: white;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lab-assistant-layout.dark .action-card {
+  background: #16213e;
+  border-color: #2c3e50;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.action-card svg {
+  color: #667eea;
+}
+
+.action-card span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.lab-assistant-layout.dark .action-card span {
+  color: white;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  background: white;
+  border-radius: 16px;
+}
+
+.lab-assistant-layout.dark .loading-container {
+  background: #16213e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .additional-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}LabTests.css

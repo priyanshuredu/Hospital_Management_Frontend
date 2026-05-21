@@ -47,13 +47,13 @@ const Login = () => {
       const machine = response.data.machine;
 
       if (userId && token && userName && role) {
-        localStorage.setItem('Token', token);
-        localStorage.setItem('User Id', userId);
-        localStorage.setItem('User Name', userName);
-        localStorage.setItem('role', role);
-        localStorage.setItem('email', email);
-        localStorage.setItem('host', host);
-        localStorage.setItem('machine', machine);
+        sessionStorage.setItem('Token', token);
+        sessionStorage.setItem('User Id', userId);
+        sessionStorage.setItem('User Name', userName);
+        sessionStorage.setItem('role', role);
+        sessionStorage.setItem('email', email);
+        sessionStorage.setItem('host', host);
+        sessionStorage.setItem('machine', machine);
         
         setLoading(false);
         

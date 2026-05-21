@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ThemeProvider } from './components/ThemeContext';
 import MainLayout from './components/MainLayout';
 import {BrowserRouter , Routes , Route} from 'react-router-dom'
@@ -11,10 +11,15 @@ import NotAuthorized from './components/NotAuthorised';
 import NotFound from './components/NotFound';
 import ForgotPassword from './components/ForgotPassword';
 import DoctorLayout from './components/DoctorLayout';
+import LabAssistantLayout from './components/LabAssistantLayout';
 
 function App() {
-  const role = localStorage.getItem('role');
-  const token = localStorage.getItem('token')
+  const [role,setRole] = useState(null);
+  const token = sessionStorage.getItem('token');
+
+  useEffect(() =>{
+    setRole(sessionStorage.getItem('role'));
+  },[]);
   
   return (
     <ThemeProvider>
@@ -27,6 +32,7 @@ function App() {
         <Route path='/super-admin' element={role === 'admin' ? <MainLayout /> : <NotAuthorized/>}></Route>
         <Route path='/hospital' element={role === 'hospital-admin' ? <HospitalLayout /> : <NotAuthorized/>}></Route>
         <Route path='/doctor' element={<DoctorLayout/>}></Route>
+        <Route path='/lab' element={<LabAssistantLayout/>}></Route>
         <Route path='*' element={<NotFound/>}></Route>
       </Routes>
       </BrowserRouter>

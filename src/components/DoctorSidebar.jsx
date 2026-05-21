@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 import '../styles/DoctorSidebar.css';
+import { logout } from '../services/logout';
 
 const DoctorSidebar = ({ activeTab, setActiveTab }) => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -148,7 +149,7 @@ const DoctorSidebar = ({ activeTab, setActiveTab }) => {
                 </button>
               ))}
               <hr className="doctor-dropdown-divider" />
-              <button className="doctor-profile-item logout" onClick={() => console.log('Logout clicked')}>
+              <button className="doctor-profile-item logout" onClick={() => logout()}>
                 <LogOut size={18} />
                 <span>Logout</span>
               </button>

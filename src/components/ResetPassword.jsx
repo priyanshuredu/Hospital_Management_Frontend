@@ -63,7 +63,7 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('Token')
+      const token = sessionStorage.getItem('Token')
       const response = await axios.patch(
         'http://localhost:5000/user/reset-password',
         {
