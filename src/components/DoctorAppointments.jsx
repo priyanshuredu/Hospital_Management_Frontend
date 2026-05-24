@@ -1,3 +1,4 @@
+// components/DoctorAppointments.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   Search, 
@@ -13,8 +14,16 @@ import {
   FileText,
   CheckCircle,
   XCircle,
-  Clock as ClockIcon
+  Clock as ClockIcon,
+  Eye,
+  PlusCircle,
+  Activity,
+  X,
+  FlaskConical,
+  AlertCircle,
+  Pill
 } from 'lucide-react';
+import { apiService } from '../services/api';
 import '../styles/DoctorAppointments.css';
 
 const DoctorAppointments = () => {
@@ -22,11 +31,31 @@ const DoctorAppointments = () => {
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('date');
+  const [sortBy, setSortBy] = useState('appointmentDate');
   const [sortOrder, setSortOrder] = useState('asc');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [loadingPrescription, setLoadingPrescription] = useState(false);
+  const [loadingLabTests, setLoadingLabTests] = useState(false);
+  const [labTestsList, setLabTestsList] = useState([]);
+  const [prescriptionData, setPrescriptionData] = useState({
+    precautions: '',
+    medicines: [],
+    labTests: [],
+    followUpDate: ''
+  });
+  const [currentMedicine, setCurrentMedicine] = useState({
+    name: '',
+    dosage: '',
+    frequency: '',
+    duration: '',
+    instructions: ''
+  });
+
+  // Get doctor ID from localStorage or auth context
+  const doctorId = JSON.parse(localStorage.getItem('user'))?._id || '';
 
   useEffect(() => {
     fetchAppointments();
@@ -37,121 +66,56 @@ const DoctorAppointments = () => {
   }, [appointments, searchTerm, sortBy, sortOrder, filterStatus]);
 
   const fetchAppointments = async () => {
+    setLoading(true);
     try {
-      // Simulate API call
-      const data = await mockApiCall();
-      setAppointments(data);
-      setFilteredAppointments(data);
-      setLoading(false);
+      const response = await apiService.getAppointmentsByDoctor();
+      let appointmentsData = response;
+      if (response?.data) appointmentsData = response.data;
+      if (response?.appointments) appointmentsData = response.appointments;
+      
+      setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
+      setFilteredAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);
     } catch (error) {
       console.error('Error fetching appointments:', error);
+      setAppointments([]);
+      setFilteredAppointments([]);
+    } finally {
       setLoading(false);
     }
   };
 
-  const mockApiCall = () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([
-          {
-            id: 1,
-            patientName: "John Doe",
-            patientAge: 45,
-            patientGender: "Male",
-            phone: "+1 234 567 8900",
-            email: "john.doe@email.com",
-            address: "123 Main St, New York, NY 10001",
-            date: "2024-01-15",
-            time: "09:00 AM",
-            type: "General Checkup",
-            status: "completed",
-            symptoms: "Headache, fatigue",
-            notes: "Regular checkup, blood work needed",
-            duration: 30
-          },
-          {
-            id: 2,
-            patientName: "Jane Smith",
-            patientAge: 32,
-            patientGender: "Female",
-            phone: "+1 234 567 8901",
-            email: "jane.smith@email.com",
-            address: "456 Oak Ave, Los Angeles, CA 90001",
-            date: "2024-01-15",
-            time: "10:30 AM",
-            type: "Follow-up",
-            status: "confirmed",
-            symptoms: "Blood pressure check",
-            notes: "Follow-up on medication",
-            duration: 20
-          },
-          {
-            id: 3,
-            patientName: "Mike Johnson",
-            patientAge: 58,
-            patientGender: "Male",
-            phone: "+1 234 567 8902",
-            email: "mike.j@email.com",
-            address: "789 Pine Rd, Chicago, IL 60601",
-            date: "2024-01-15",
-            time: "02:00 PM",
-            type: "Consultation",
-            status: "pending",
-            symptoms: "Chest pain, shortness of breath",
-            notes: "Urgent consultation needed",
-            duration: 45
-          },
-          {
-            id: 4,
-            patientName: "Sarah Williams",
-            patientAge: 29,
-            patientGender: "Female",
-            phone: "+1 234 567 8903",
-            email: "sarah.w@email.com",
-            address: "321 Elm St, Houston, TX 77001",
-            date: "2024-01-16",
-            time: "11:00 AM",
-            type: "Vaccination",
-            status: "confirmed",
-            symptoms: "Routine vaccination",
-            notes: "Flu shot",
-            duration: 15
-          },
-          {
-            id: 5,
-            patientName: "Robert Brown",
-            patientAge: 67,
-            patientGender: "Male",
-            phone: "+1 234 567 8904",
-            email: "robert.b@email.com",
-            address: "654 Maple Dr, Phoenix, AZ 85001",
-            date: "2024-01-16",
-            time: "03:30 PM",
-            type: "Specialist Referral",
-            status: "cancelled",
-            symptoms: "Joint pain, arthritis",
-            notes: "Referred to orthopedics",
-            duration: 30
-          },
-          {
-            id: 6,
-            patientName: "Emily Davis",
-            patientAge: 24,
-            patientGender: "Female",
-            phone: "+1 234 567 8905",
-            email: "emily.d@email.com",
-            address: "987 Cedar Ln, Philadelphia, PA 19101",
-            date: "2024-01-17",
-            time: "09:30 AM",
-            type: "Checkup",
-            status: "confirmed",
-            symptoms: "Annual physical",
-            notes: "Complete blood work",
-            duration: 30
-          }
-        ]);
-      }, 800);
-    });
+  const fetchLabTestsByHospital = async (hospitalId) => {
+    if (!hospitalId) {
+      console.warn('No hospital ID available');
+      setLabTestsList([]);
+      return;
+    }
+
+    setLoadingLabTests(true);
+    try {
+      const response = await apiService.getLabTestsByHospital(hospitalId);
+      let labTestsData = response;
+      if (response?.data.labs) labTestsData = response.data.labs;
+      if (response?.labs) labTestsData = response.labTests;
+      
+      // Format the lab tests data
+      const formattedLabTests = Array.isArray(labTestsData) 
+        ? labTestsData.map(test => ({
+            id: test._id || test.id,
+            name: test.test_name || test.name,
+            price: test.price,
+            category: test.category,
+            preparation: test.preparation_instructions
+          }))
+        : [];
+      
+      setLabTestsList(formattedLabTests);
+    } catch (error) {
+      console.error('Error fetching lab tests:', error);
+      setLabTestsList([]);
+    } finally {
+      setLoadingLabTests(false);
+    }
   };
 
   const filterAndSortAppointments = () => {
@@ -160,35 +124,39 @@ const DoctorAppointments = () => {
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(apt =>
-        apt.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        apt.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        apt.symptoms.toLowerCase().includes(searchTerm.toLowerCase())
+        apt.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        apt.patientPhone?.toString().includes(searchTerm) ||
+        apt.timeSlot?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Apply status filter
+    // Apply attendance status filter
     if (filterStatus !== 'all') {
-      filtered = filtered.filter(apt => apt.status === filterStatus);
+      if (filterStatus === 'attended') {
+        filtered = filtered.filter(apt => apt.appointmentAttended === true);
+      } else if (filterStatus === 'not-attended') {
+        filtered = filtered.filter(apt => apt.appointmentAttended === false);
+      }
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
       switch(sortBy) {
-        case 'date':
-          comparison = new Date(a.date) - new Date(b.date);
+        case 'appointmentDate':
+          comparison = new Date(a.appointmentDate) - new Date(b.appointmentDate);
           break;
-        case 'time':
-          comparison = a.time.localeCompare(b.time);
+        case 'timeSlot':
+          comparison = a.timeSlot?.localeCompare(b.timeSlot);
           break;
         case 'patientName':
-          comparison = a.patientName.localeCompare(b.patientName);
+          comparison = (a.patientName || '').localeCompare(b.patientName || '');
           break;
-        case 'status':
-          comparison = a.status.localeCompare(b.status);
+        case 'patientAge':
+          comparison = (a.patientAge || 0) - (b.patientAge || 0);
           break;
-        case 'type':
-          comparison = a.type.localeCompare(b.type);
+        case 'fee':
+          comparison = (a.fee || 0) - (b.fee || 0);
           break;
         default:
           comparison = 0;
@@ -208,37 +176,148 @@ const DoctorAppointments = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'completed': return <CheckCircle size={16} />;
-      case 'confirmed': return <CheckCircle size={16} />;
-      case 'pending': return <ClockIcon size={16} />;
-      case 'cancelled': return <XCircle size={16} />;
-      default: return null;
+  const updateAttendance = async (appointmentId, status) => {
+    try {
+      await apiService.updateAppointmentAttendance(appointmentId, status);
+      await fetchAppointments();
+      if (selectedAppointment) {
+        setSelectedAppointment(null);
+      }
+    } catch (error) {
+      console.error('Error updating attendance:', error);
+      alert('Failed to update attendance. Please try again.');
     }
   };
 
-  const getStatusClass = (status) => {
-    return `status-badge status-${status}`;
+  const openPrescriptionModal = async (appointment) => {
+    setSelectedAppointment(appointment);
+    // Get hospital ID from appointment
+    const hospitalId = appointment.doctor?.hospital?._id || 
+                      appointment.doctor?.hospital || 
+                      appointment.hospital?._id;
+    
+    if (hospitalId) {
+      await fetchLabTestsByHospital(hospitalId);
+    }
+    setShowPrescriptionModal(true);
   };
 
-  const updateAppointmentStatus = async (id, newStatus) => {
+  const handleAddPrescription = async () => {
+    if (!prescriptionData.medicines.length && !prescriptionData.precautions && !prescriptionData.labTests.length) {
+      alert('Please add at least one medicine, precaution, or lab test');
+      return;
+    }
+
+    setLoadingPrescription(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const updatedAppointments = appointments.map(apt =>
-        apt.id === id ? { ...apt, status: newStatus } : apt
-      );
-      setAppointments(updatedAppointments);
-      setSelectedAppointment(null);
+      const prescriptionPayload = {
+        appointmentId: selectedAppointment._id,
+        doctorId: doctorId,
+        patientId: selectedAppointment.user?._id || selectedAppointment.user,
+        precautions: prescriptionData.precautions,
+        medicines: prescriptionData.medicines.map(med => ({
+          name: med.name,
+          dosage: med.dosage,
+          frequency: med.frequency,
+          duration: med.duration,
+          instructions: med.instructions || ''
+        })),
+        labTests: prescriptionData.labTests.map(test => ({
+          testId: test.id,
+          testName: test.name,
+          price: test.price,
+          status: 'pending'
+        })),
+        followUpDate: prescriptionData.followUpDate || null,
+        prescribedDate: new Date().toISOString()
+      };
+      
+      const response = await apiService.createPrescription(prescriptionPayload);
+      
+      if (response.success || response.message === 'success') {
+        alert('Prescription added successfully!');
+        setShowPrescriptionModal(false);
+        resetPrescriptionForm();
+        await fetchAppointments();
+      } else {
+        throw new Error('Failed to add prescription');
+      }
     } catch (error) {
-      console.error('Error updating appointment:', error);
+      console.error('Error adding prescription:', error);
+      alert(error.response?.data?.message || 'Failed to add prescription. Please try again.');
+    } finally {
+      setLoadingPrescription(false);
+    }
+  };
+
+  const resetPrescriptionForm = () => {
+    setPrescriptionData({
+      precautions: '',
+      medicines: [],
+      labTests: [],
+      followUpDate: ''
+    });
+    setCurrentMedicine({
+      name: '',
+      dosage: '',
+      frequency: '',
+      duration: '',
+      instructions: ''
+    });
+  };
+
+  const addMedicine = () => {
+    if (currentMedicine.name && currentMedicine.dosage) {
+      setPrescriptionData({
+        ...prescriptionData,
+        medicines: [...prescriptionData.medicines, { ...currentMedicine, id: Date.now() }]
+      });
+      setCurrentMedicine({
+        name: '',
+        dosage: '',
+        frequency: '',
+        duration: '',
+        instructions: ''
+      });
+    } else {
+      alert('Please enter at least medicine name and dosage');
+    }
+  };
+
+  const removeMedicine = (id) => {
+    setPrescriptionData({
+      ...prescriptionData,
+      medicines: prescriptionData.medicines.filter(med => med.id !== id)
+    });
+  };
+
+  const handleLabTestToggle = (test) => {
+    const isSelected = prescriptionData.labTests.some(t => t.id === test.id);
+    if (isSelected) {
+      setPrescriptionData({
+        ...prescriptionData,
+        labTests: prescriptionData.labTests.filter(t => t.id !== test.id)
+      });
+    } else {
+      setPrescriptionData({
+        ...prescriptionData,
+        labTests: [...prescriptionData.labTests, test]
+      });
     }
   };
 
   const SortIcon = ({ field }) => {
     if (sortBy !== field) return null;
     return sortOrder === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />;
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -254,7 +333,7 @@ const DoctorAppointments = () => {
       {/* Header */}
       <div className="appointments-header">
         <div>
-          <h1>Appointments</h1>
+          <h1>My Appointments</h1>
           <p>Manage and track all patient appointments</p>
         </div>
         <div className="header-stats">
@@ -263,12 +342,12 @@ const DoctorAppointments = () => {
             <span className="stat-number">{appointments.length}</span>
           </div>
           <div className="stat-badge">
-            <span className="stat-label">Today</span>
-            <span className="stat-number">{appointments.filter(apt => apt.date === new Date().toISOString().split('T')[0]).length}</span>
+            <span className="stat-label">Attended</span>
+            <span className="stat-number">{appointments.filter(apt => apt.appointmentAttended === true).length}</span>
           </div>
           <div className="stat-badge">
             <span className="stat-label">Pending</span>
-            <span className="stat-number">{appointments.filter(apt => apt.status === 'pending').length}</span>
+            <span className="stat-number">{appointments.filter(apt => apt.appointmentAttended === false).length}</span>
           </div>
         </div>
       </div>
@@ -279,7 +358,7 @@ const DoctorAppointments = () => {
           <Search size={20} />
           <input
             type="text"
-            placeholder="Search by patient name, appointment type, or symptoms..."
+            placeholder="Search by patient name, phone, or time slot..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -297,32 +376,30 @@ const DoctorAppointments = () => {
       {showFilters && (
         <div className="filters-panel">
           <div className="filter-group">
-            <label>Status</label>
+            <label>Attendance Status</label>
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-              <option value="all">All Status</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="all">All</option>
+              <option value="attended">Attended</option>
+              <option value="not-attended">Not Attended</option>
             </select>
           </div>
           <div className="filter-group">
             <label>Sort By</label>
             <div className="sort-buttons">
-              <button onClick={() => handleSort('date')} className="sort-btn">
-                Date <SortIcon field="date" />
+              <button onClick={() => handleSort('appointmentDate')} className="sort-btn">
+                Date <SortIcon field="appointmentDate" />
               </button>
-              <button onClick={() => handleSort('time')} className="sort-btn">
-                Time <SortIcon field="time" />
+              <button onClick={() => handleSort('timeSlot')} className="sort-btn">
+                Time <SortIcon field="timeSlot" />
               </button>
               <button onClick={() => handleSort('patientName')} className="sort-btn">
                 Patient <SortIcon field="patientName" />
               </button>
-              <button onClick={() => handleSort('type')} className="sort-btn">
-                Type <SortIcon field="type" />
+              <button onClick={() => handleSort('patientAge')} className="sort-btn">
+                Age <SortIcon field="patientAge" />
               </button>
-              <button onClick={() => handleSort('status')} className="sort-btn">
-                Status <SortIcon field="status" />
+              <button onClick={() => handleSort('fee')} className="sort-btn">
+                Fee <SortIcon field="fee" />
               </button>
             </div>
           </div>
@@ -336,14 +413,15 @@ const DoctorAppointments = () => {
             <tr>
               <th>Patient</th>
               <th>Date & Time</th>
-              <th>Type</th>
-              <th>Status</th>
+              <th>Hospital</th>
+              <th>Fee</th>
+              <th>Attendance</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredAppointments.map((appointment) => (
-              <tr key={appointment.id} onClick={() => setSelectedAppointment(appointment)}>
+              <tr key={appointment._id}>
                 <td>
                   <div className="patient-info">
                     <div className="patient-avatar">
@@ -351,27 +429,55 @@ const DoctorAppointments = () => {
                     </div>
                     <div>
                       <div className="patient-name">{appointment.patientName}</div>
-                      <div className="patient-detail">{appointment.patientAge} yrs, {appointment.patientGender}</div>
+                      <div className="patient-detail">
+                        {appointment.patientAge} yrs, {appointment.patientGender}
+                      </div>
+                      <div className="patient-contact">
+                        <Phone size={12} /> {appointment.patientPhone}
+                      </div>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <div className="datetime-info">
+                  <div className="datetime-info"> 
                     <Calendar size={14} />
-                    <span>{new Date(appointment.date).toLocaleDateString()}</span>
+                    <span>{formatDate(appointment.appointmentDate)}</span>
                     <Clock size={14} />
-                    <span>{appointment.time}</span>
+                    <span>{appointment.timeSlot}</span>
                   </div>
                 </td>
-                <td>{appointment.type}</td>
                 <td>
-                  <span className={getStatusClass(appointment.status)}>
-                    {getStatusIcon(appointment.status)}
-                    {appointment.status}
+                  {appointment.doctor?.hospital?.hospital_name || appointment.hospital?.hospital_name || 'N/A'}
+                </td>
+                <td>₹{appointment.fee}</td>
+                <td>
+                  <span className={`status-badge ${appointment.appointmentAttended ? 'status-attended' : 'status-pending'}`}>
+                    {appointment.appointmentAttended ? 
+                      <CheckCircle size={14} /> : 
+                      <ClockIcon size={14} />
+                    }
+                    {appointment.appointmentAttended ? 'Attended' : 'Pending'}
                   </span>
                 </td>
                 <td>
-                  <button className="view-details-btn">View Details</button>
+                  <div className="action-buttons">
+                    <button 
+                      className="view-details-btn"
+                      onClick={() => setSelectedAppointment(appointment)}
+                      title="View Details"
+                    >
+                      <Eye size={16} /> View
+                    </button>
+                    {!appointment.appointmentAttended && (
+                      <button 
+                        className="mark-attended-btn"
+                        onClick={() => updateAttendance(appointment._id, true)}
+                        title="Mark as Attended"
+                      >
+                        <Activity size={16} /> Mark Attended
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -386,9 +492,9 @@ const DoctorAppointments = () => {
       </div>
 
       {/* Appointment Details Modal */}
-      {selectedAppointment && (
+      {selectedAppointment && !showPrescriptionModal && (
         <div className="modal-overlay" onClick={() => setSelectedAppointment(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Appointment Details</h2>
               <button className="close-btn" onClick={() => setSelectedAppointment(null)}>×</button>
@@ -412,15 +518,13 @@ const DoctorAppointments = () => {
                   </div>
                   <div className="detail-item">
                     <Phone size={16} />
-                    <strong>Phone:</strong> {selectedAppointment.phone}
+                    <strong>Phone:</strong> {selectedAppointment.patientPhone}
                   </div>
-                  <div className="detail-item">
-                    <Mail size={16} />
-                    <strong>Email:</strong> {selectedAppointment.email}
+                  <div className="detail-item full-width">
+                    <strong>Doctor:</strong> {selectedAppointment.doctor?.doctor_name || 'N/A'}
                   </div>
-                  <div className="detail-item">
-                    <MapPin size={16} />
-                    <strong>Address:</strong> {selectedAppointment.address}
+                  <div className="detail-item full-width">
+                    <strong>Hospital:</strong> {selectedAppointment.hospital?.hospital_name || 'N/A'}
                   </div>
                 </div>
               </div>
@@ -430,51 +534,220 @@ const DoctorAppointments = () => {
                 <div className="details-grid">
                   <div className="detail-item">
                     <Calendar size={16} />
-                    <strong>Date:</strong> {new Date(selectedAppointment.date).toLocaleDateString()}
+                    <strong>Date:</strong> {formatDate(selectedAppointment.appointmentDate)}
                   </div>
                   <div className="detail-item">
                     <Clock size={16} />
-                    <strong>Time:</strong> {selectedAppointment.time}
+                    <strong>Time:</strong> {selectedAppointment.timeSlot}
                   </div>
                   <div className="detail-item">
-                    <FileText size={16} />
-                    <strong>Type:</strong> {selectedAppointment.type}
+                    <strong>Booking Date:</strong> {formatDate(selectedAppointment.bookingDate)}
                   </div>
                   <div className="detail-item">
-                    <span>⏱️</span>
-                    <strong>Duration:</strong> {selectedAppointment.duration} minutes
+                    <strong>Fee:</strong> ₹{selectedAppointment.fee}
                   </div>
                 </div>
               </div>
 
               <div className="details-section">
-                <h3>Medical Information</h3>
-                <div className="detail-item full-width">
-                  <strong>Symptoms:</strong> {selectedAppointment.symptoms}
-                </div>
-                <div className="detail-item full-width">
-                  <strong>Notes:</strong> {selectedAppointment.notes}
+                <h3>Attendance Status</h3>
+                <div className="attendance-status">
+                  <p>Current Status: 
+                    <strong className={selectedAppointment.appointmentAttended ? 'text-success' : 'text-warning'}>
+                      {selectedAppointment.appointmentAttended ? ' Attended' : ' Not Attended Yet'}
+                    </strong>
+                  </p>
+                  {!selectedAppointment.appointmentAttended && (
+                    <button 
+                      className="update-attendance-btn"
+                      onClick={() => updateAttendance(selectedAppointment._id, true)}
+                    >
+                      Mark as Attended
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="details-section">
-                <h3>Update Status</h3>
-                <div className="status-actions">
+              <div className="modal-actions">
+                <button 
+                  className="prescription-btn"
+                  onClick={() => openPrescriptionModal(selectedAppointment)}
+                >
+                  <PlusCircle size={18} /> Add Prescription
+                </button>
+                <button className="close-modal-btn" onClick={() => setSelectedAppointment(null)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prescription Modal */}
+      {showPrescriptionModal && selectedAppointment && (
+        <div className="modal-overlay" onClick={() => {
+          setShowPrescriptionModal(false);
+          resetPrescriptionForm();
+        }}>
+          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add Prescription</h2>
+              <button className="close-btn" onClick={() => {
+                setShowPrescriptionModal(false);
+                resetPrescriptionForm();
+              }}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="prescription-form">
+                <div className="form-group patient-info-bar">
+                  <label>Patient: <strong>{selectedAppointment.patientName}</strong></label>
+                  <label>Age: <strong>{selectedAppointment.patientAge} yrs</strong></label>
+                  <label>Gender: <strong>{selectedAppointment.patientGender}</strong></label>
+                </div>
+
+                <div className="form-group">
+                  <label>Hospital: <strong>{selectedAppointment.doctor?.hospital?.hospital_name || 'N/A'}</strong></label>
+                </div>
+
+                {/* Medicines Section */}
+                <div className="form-group">
+                  <label><Pill size={16} /> Medicines</label>
+                  <div className="medicine-input-grid">
+                    <input
+                      type="text"
+                      placeholder="Medicine name *"
+                      value={currentMedicine.name}
+                      onChange={(e) => setCurrentMedicine({...currentMedicine, name: e.target.value})}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Dosage (e.g., 500mg) *"
+                      value={currentMedicine.dosage}
+                      onChange={(e) => setCurrentMedicine({...currentMedicine, dosage: e.target.value})}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Frequency (e.g., twice daily)"
+                      value={currentMedicine.frequency}
+                      onChange={(e) => setCurrentMedicine({...currentMedicine, frequency: e.target.value})}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Duration (e.g., 5 days)"
+                      value={currentMedicine.duration}
+                      onChange={(e) => setCurrentMedicine({...currentMedicine, duration: e.target.value})}
+                    />
+                    <textarea
+                      placeholder="Instructions (e.g., Take after food)"
+                      value={currentMedicine.instructions}
+                      onChange={(e) => setCurrentMedicine({...currentMedicine, instructions: e.target.value})}
+                      rows="2"
+                    />
+                    <button onClick={addMedicine} className="add-medicine-btn">Add Medicine</button>
+                  </div>
+                  
+                  <div className="medicines-list">
+                    {prescriptionData.medicines.length === 0 ? (
+                      <p className="no-items">No medicines added yet</p>
+                    ) : (
+                      prescriptionData.medicines.map((med) => (
+                        <div key={med.id} className="medicine-item">
+                          <div className="medicine-details">
+                            <strong>{med.name}</strong> - {med.dosage}
+                            {med.frequency && <span> | {med.frequency}</span>}
+                            {med.duration && <span> | {med.duration}</span>}
+                            {med.instructions && <div className="medicine-instructions">📝 {med.instructions}</div>}
+                          </div>
+                          <button onClick={() => removeMedicine(med.id)} className="remove-medicine-btn">×</button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Precautions Section */}
+                <div className="form-group">
+                  <label><AlertCircle size={16} /> Precautions</label>
+                  <textarea
+                    value={prescriptionData.precautions}
+                    onChange={(e) => setPrescriptionData({...prescriptionData, precautions: e.target.value})}
+                    placeholder="Enter precautions and safety measures..."
+                    rows="3"
+                  />
+                </div>
+
+                {/* Lab Tests Section */}
+                <div className="form-group">
+                  <label><FlaskConical size={16} /> Lab Tests (Select multiple)</label>
+                  {loadingLabTests ? (
+                    <div className="loading-lab-tests">Loading lab tests...</div>
+                  ) : labTestsList.length > 0 ? (
+                    <div className="lab-tests-dropdown">
+                      <div className="lab-tests-container">
+                        {labTestsList.map((test) => (
+                          <label key={test.id} className="lab-test-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={prescriptionData.labTests.some(t => t.id === test.id)}
+                              onChange={() => handleLabTestToggle(test)}
+                            />
+                            <span className="test-name">{test.name}</span>
+                            {test.price && <span className="test-price">₹{test.price}</span>}
+                            {test.category && <span className="test-category">{test.category}</span>}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="no-lab-tests">
+                      <p>No lab tests available for this hospital</p>
+                    </div>
+                  )}
+                  
+                  {prescriptionData.labTests.length > 0 && (
+                    <div className="selected-lab-tests">
+                      <strong>Selected Tests ({prescriptionData.labTests.length}):</strong>
+                      <div className="selected-tags">
+                        {prescriptionData.labTests.map((test) => (
+                          <span key={test.id} className="test-tag">
+                            {test.name}
+                            {test.price && <span className="test-price-tag"> (₹{test.price})</span>}
+                            <button onClick={() => handleLabTestToggle(test)}>×</button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Follow-up Date */}
+                <div className="form-group">
+                  <label>Follow-up Date (Optional)</label>
+                  <input
+                    type="date"
+                    value={prescriptionData.followUpDate}
+                    onChange={(e) => setPrescriptionData({...prescriptionData, followUpDate: e.target.value})}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+
+                <div className="modal-actions">
                   <button 
-                    className="status-action-btn confirmed"
-                    onClick={() => updateAppointmentStatus(selectedAppointment.id, 'confirmed')}
+                    onClick={handleAddPrescription} 
+                    className="save-prescription-btn"
+                    disabled={loadingPrescription}
                   >
-                    Confirm
+                    {loadingPrescription ? 'Saving...' : 'Save Prescription'}
+                    {!loadingPrescription && <PlusCircle size={18} />}
                   </button>
                   <button 
-                    className="status-action-btn completed"
-                    onClick={() => updateAppointmentStatus(selectedAppointment.id, 'completed')}
-                  >
-                    Mark Completed
-                  </button>
-                  <button 
-                    className="status-action-btn cancelled"
-                    onClick={() => updateAppointmentStatus(selectedAppointment.id, 'cancelled')}
+                    onClick={() => {
+                      setShowPrescriptionModal(false);
+                      resetPrescriptionForm();
+                    }} 
+                    className="cancel-btn"
                   >
                     Cancel
                   </button>

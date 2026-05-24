@@ -1,17 +1,24 @@
-// components/BookingModal.jsx - Updated with API integration
-import React, { useState } from 'react';
-import { X, Calendar, Clock, MapPin, Video, Phone, User, Mail, CheckCircle, CreditCard, ArrowRight, Stethoscope, Building } from 'lucide-react';
+// components/BookingModal.jsx - Smart integration for both doctor and hospital booking
+import React, { useState, useEffect } from 'react';
+import { X, MapPin, Video, Phone, User, Mail, CheckCircle, CreditCard, ArrowRight, Stethoscope, Building } from 'lucide-react';
 import { apiService } from '../services/api';
 
-const BookingModal = ({ item, type, onClose }) => {
+const BookingModal = ({ onClose, preSelectedData, sourceType }) => {
   const [step, setStep] = useState(1);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedHospital, setSelectedHospital] = useState('');
+  const [selectedDoctor, setSelectedDoctor] = useState('');
+  const [appointmentDate, setAppointmentDate] = useState('');
+  const [appointmentDateValue, setAppointmentDateValue] = useState(null); // Store actual Date object
   const [selectedSlot, setSelectedSlot] = useState('');
   const [consultationType, setConsultationType] = useState('clinic');
   const [loading, setLoading] = useState(false);
+  const [hospitals, setHospitals] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [allDoctors, setAllDoctors] = useState([]);
+  const [loadingHospitals, setLoadingHospitals] = useState(false);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [patientDetails, setPatientDetails] = useState({
     name: '',
-    email: '',
     phone: '',
     age: '',
     gender: ''
@@ -25,16 +32,182 @@ const BookingModal = ({ item, type, onClose }) => {
     '4:00 PM', '4:30 PM', '5:00 PM'
   ];
 
-  const dates = [
-    'Today', 'Tomorrow', getFormattedDate(2), getFormattedDate(3), 
-    getFormattedDate(4), getFormattedDate(5)
-  ];
-
+  // Helper function to get formatted date string
   function getFormattedDate(daysAdd) {
     const date = new Date();
     date.setDate(date.getDate() + daysAdd);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
+
+  // Helper function to get actual Date object from display string
+  function getActualDateFromDisplay(displayDate) {
+    if (displayDate === 'Today') {
+      return new Date();
+    } else if (displayDate === 'Tomorrow') {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow;
+    } else {
+      // Find which day it corresponds to from the dates array
+      const index = dates.findIndex(d => d === displayDate);
+      if (index !== -1) {
+        const date = new Date();
+        date.setDate(date.getDate() + index);
+        return date;
+      }
+    }
+    return new Date(); // fallback
+  }
+
+  // Create date options with both display label and actual date
+  const dateOptions = [
+    { label: 'Today', value: new Date() },
+    { label: 'Tomorrow', value: (() => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow;
+      })()
+    },
+    { label: getFormattedDate(2), value: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() + 2);
+        return date;
+      })()
+    },
+    { label: getFormattedDate(3), value: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() + 3);
+        return date;
+      })()
+    },
+    { label: getFormattedDate(4), value: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() + 4);
+        return date;
+      })()
+    },
+    { label: getFormattedDate(5), value: (() => {
+        const date = new Date();
+        date.setDate(date.getDate() + 5);
+        return date;
+      })()
+    }
+  ];
+
+  const dates = dateOptions.map(option => option.label);
+
+  // Handle date selection
+  const handleDateSelect = (selectedLabel) => {
+    setAppointmentDate(selectedLabel);
+    const actualDate = getActualDateFromDisplay(selectedLabel);
+    setAppointmentDateValue(actualDate);
+  };
+
+  // Fetch hospitals on component mount
+  useEffect(() => {
+    fetchHospitals();
+    fetchAllDoctors();
+  }, []);
+
+  // Handle pre-selected data from doctor or hospital list
+  useEffect(() => {
+    if (preSelectedData) {
+      if (sourceType === 'doctor') {
+        // User came from doctor list - pre-select the doctor's hospital and doctor
+        const doctorHospitalId = preSelectedData.hospital?._id?.$oid || preSelectedData.hospital?._id;
+        if (doctorHospitalId) {
+          setSelectedHospital(doctorHospitalId);
+          setSelectedDoctor(preSelectedData._id?.$oid || preSelectedData._id);
+        }
+      } else if (sourceType === 'hospital') {
+        // User came from hospital list - pre-select only the hospital
+        const hospitalId = preSelectedData._id?.$oid || preSelectedData._id;
+        setSelectedHospital(hospitalId);
+      }
+    }
+  }, [preSelectedData, sourceType, hospitals]);
+
+  // Fetch doctors when hospital is selected
+  useEffect(() => {
+    if (selectedHospital) {
+      fetchDoctorsByHospital(selectedHospital);
+    } else {
+      setDoctors([]);
+      setSelectedDoctor('');
+    }
+  }, [selectedHospital]);
+
+  const fetchAllDoctors = async () => {
+    try {
+      const response = await apiService.getAllDoctors();
+      let doctorsData = response;
+      if (response?.data) doctorsData = response.data;
+      if (response?.doctors) doctorsData = response.doctors;
+      setAllDoctors(Array.isArray(doctorsData) ? doctorsData : []);
+    } catch (error) {
+      console.error('Error fetching all doctors:', error);
+    }
+  };
+
+  const fetchHospitals = async () => {
+    setLoadingHospitals(true);
+    try {
+      const response = await apiService.getAllHospitals();
+      let hospitalsData = response;
+      if (response?.data) hospitalsData = response.data;
+      if (response?.hospitals) hospitalsData = response.hospitals;
+      
+      // Filter only approved hospitals
+      const approvedHospitals = Array.isArray(hospitalsData) 
+        ? hospitalsData.filter(h => h.status === 'approved')
+        : [];
+      
+      setHospitals(approvedHospitals);
+    } catch (error) {
+      console.error('Error fetching hospitals:', error);
+      setHospitals([]);
+    } finally {
+      setLoadingHospitals(false);
+    }
+  };
+
+  const fetchDoctorsByHospital = async (hospitalId) => {
+    setLoadingDoctors(true);
+    try {
+      // First try to fetch doctors by hospital API
+      let hospitalDoctors = [];
+      try {
+        const response = await apiService.getDoctorsByHospital(hospitalId);
+        let doctorsData = response;
+        if (response?.data) doctorsData = response.data;
+        if (response?.doctors) doctorsData = response.doctors;
+        hospitalDoctors = Array.isArray(doctorsData) ? doctorsData : [];
+      } catch (error) {
+        console.log('Fetch by hospital API failed, filtering from all doctors');
+        // Fallback: Filter from all doctors
+        hospitalDoctors = allDoctors.filter(doctor => {
+          const docHospitalId = doctor.hospital?._id?.$oid || doctor.hospital?._id || doctor.hospital;
+          return docHospitalId === hospitalId && doctor.accountStatus === 'active';
+        });
+      }
+      
+      setDoctors(hospitalDoctors);
+      
+      // If coming from doctor selection and doctor is in this hospital, auto-select
+      if (sourceType === 'doctor' && preSelectedData) {
+        const doctorId = preSelectedData._id?.$oid || preSelectedData._id;
+        const doctorExists = hospitalDoctors.some(d => (d._id?.$oid || d._id) === doctorId);
+        if (doctorExists && !selectedDoctor) {
+          setSelectedDoctor(doctorId);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+      setDoctors([]);
+    } finally {
+      setLoadingDoctors(false);
+    }
+  };
 
   const handlePatientDetailsChange = (e) => {
     setPatientDetails({
@@ -46,68 +219,124 @@ const BookingModal = ({ item, type, onClose }) => {
   const handleConfirmBooking = async () => {
     setLoading(true);
     try {
-      // Prepare appointment data
+      const selectedHospitalData = hospitals.find(h => 
+        (h._id?.$oid || h._id) === selectedHospital
+      );
+      const selectedDoctorData = doctors.find(d => 
+        (d._id?.$oid || d._id) === selectedDoctor
+      );
+
+      // Get the actual date object
+      let finalAppointmentDate = appointmentDateValue;
+      if (!finalAppointmentDate) {
+        finalAppointmentDate = getActualDateFromDisplay(appointmentDate);
+      }
+      
+      // Format date for API (ISO string or specific format)
+      const formattedDate = finalAppointmentDate.toISOString();
+
       const appointmentData = {
+        hospital: selectedHospital,
+        doctor: selectedDoctor,
+        appointmentDate: formattedDate, // Send actual Date object or ISO string
+        appointmentDateDisplay: appointmentDate, // Keep display string for reference
+        timeSlot: selectedSlot,
         patientName: patientDetails.name,
-        patientEmail: patientDetails.email,
         patientPhone: patientDetails.phone,
         patientAge: parseInt(patientDetails.age),
         patientGender: patientDetails.gender,
-        appointmentDate: selectedDate,
-        appointmentTime: selectedSlot,
-        consultationType: consultationType,
-        ...(type === 'doctor' ? {
-          doctorId: item._id?.$oid || item._id,
-          doctorName: item.doctor_name,
-          fee: item.consultation_fee || 500
-        } : {
-          hospitalId: item._id?.$oid || item._id,
-          hospitalName: item.hospital_name,
-          fee: 500 // Default hospital consultation fee
-        }),
+        fee: selectedDoctorData?.consultation_fee || 500,
         bookingDate: new Date().toISOString(),
-        status: 'pending'
+        status: 'pending',
+        consultationType: consultationType
       };
 
-      // Call API to book appointment
-      const response = await apiService.bookAppointment(appointmentData);
-      const bookingId = response.bookingId || response.data?.bookingId || 'APPT' + Math.floor(Math.random() * 100000);
+      console.log('Sending appointment data:', appointmentData);
+      const response = await apiService.createAppointment(appointmentData);
       
-      setBookingId(bookingId);
+      const newBookingId = response.bookingId || response.data?.bookingId || response.id || 'APPT' + Math.floor(Math.random() * 100000);
+      setBookingId(newBookingId);
       setBookingConfirmed(true);
       
-      // Close modal after 3 seconds
       setTimeout(() => {
         onClose();
       }, 3000);
     } catch (error) {
       console.error('Error booking appointment:', error);
-      alert('Failed to book appointment. Please try again.');
+      alert('Failed to book appointment. Please try again.\n' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
   };
 
   const getFee = () => {
-    if (type === 'doctor') {
-      return consultationType === 'clinic' ? (item.consultation_fee || 500) : (item.consultation_fee || 500) * 0.8;
-    }
-    return 500; // Default hospital consultation fee
+    const selectedDoctorData = doctors.find(d => (d._id?.$oid || d._id) === selectedDoctor);
+    const baseFee = selectedDoctorData?.consultation_fee || 500;
+    return consultationType === 'video' ? Math.floor(baseFee * 0.8) : baseFee;
   };
 
-  const getItemName = () => {
-    if (type === 'doctor') {
-      return item.doctor_name;
-    }
-    return item.hospital_name;
+  const getSelectedHospitalName = () => {
+    const hospital = hospitals.find(h => (h._id?.$oid || h._id) === selectedHospital);
+    return hospital?.hospital_name || '';
   };
 
-  const getItemType = () => {
-    return type === 'doctor' ? 'Doctor' : 'Hospital';
+  const getSelectedDoctorName = () => {
+    const doctor = doctors.find(d => (d._id?.$oid || d._id) === selectedDoctor);
+    return doctor?.doctor_name || '';
+  };
+
+  const isNextDisabled = () => {
+    if (sourceType === 'doctor') {
+      return !selectedHospital || !selectedDoctor || !appointmentDate || !selectedSlot;
+    }
+    return !selectedHospital || !appointmentDate || !selectedSlot;
   };
 
   const renderStep1 = () => (
     <div className="booking-step">
+      <h3>Select Hospital</h3>
+      <div className="form-group">
+        <Building size={18} />
+        <select 
+          value={selectedHospital} 
+          onChange={(e) => setSelectedHospital(e.target.value)}
+          disabled={loadingHospitals || (sourceType === 'doctor' && selectedHospital)}
+        >
+          <option value="">{loadingHospitals ? 'Loading hospitals...' : 'Select a hospital'}</option>
+          {hospitals.map((hospital) => (
+            <option key={hospital._id?.$oid || hospital._id} value={hospital._id?.$oid || hospital._id}>
+              {hospital.hospital_name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <h3>Select Doctor</h3>
+      <div className="form-group">
+        <Stethoscope size={18} />
+        <select 
+          value={selectedDoctor} 
+          onChange={(e) => setSelectedDoctor(e.target.value)}
+          disabled={!selectedHospital || loadingDoctors || (sourceType === 'doctor' && selectedDoctor)}
+        >
+          <option value="">
+            {!selectedHospital 
+              ? 'Please select a hospital first' 
+              : loadingDoctors 
+                ? 'Loading doctors...' 
+                : doctors.length === 0
+                  ? 'No doctors available for this hospital'
+                  : 'Select a doctor'
+            }
+          </option>
+          {doctors.map((doctor) => (
+            <option key={doctor._id?.$oid || doctor._id} value={doctor._id?.$oid || doctor._id}>
+              {doctor.doctor_name} - ₹{doctor.consultation_fee || 500}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <h3>Select Consultation Type</h3>
       <div className="consultation-types">
         <button 
@@ -137,8 +366,8 @@ const BookingModal = ({ item, type, onClose }) => {
         {dates.map((date, index) => (
           <button
             key={index}
-            className={`date-slot ${selectedDate === date ? 'active' : ''}`}
-            onClick={() => setSelectedDate(date)}
+            className={`date-slot ${appointmentDate === date ? 'active' : ''}`}
+            onClick={() => handleDateSelect(date)}
           >
             {date}
           </button>
@@ -160,7 +389,7 @@ const BookingModal = ({ item, type, onClose }) => {
 
       <button 
         className="next-btn"
-        disabled={!selectedDate || !selectedSlot}
+        disabled={isNextDisabled()}
         onClick={() => setStep(2)}
       >
         Continue
@@ -180,17 +409,6 @@ const BookingModal = ({ item, type, onClose }) => {
             name="name"
             placeholder="Full Name"
             value={patientDetails.name}
-            onChange={handlePatientDetailsChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <Mail size={18} />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email Address"
-            value={patientDetails.email}
             onChange={handlePatientDetailsChange}
             required
           />
@@ -230,12 +448,16 @@ const BookingModal = ({ item, type, onClose }) => {
       <div className="booking-summary">
         <h4>Booking Summary</h4>
         <div className="summary-item">
-          <span>{getItemType()}:</span>
-          <strong>{getItemName()}</strong>
+          <span>Hospital:</span>
+          <strong>{getSelectedHospitalName()}</strong>
+        </div>
+        <div className="summary-item">
+          <span>Doctor:</span>
+          <strong>{getSelectedDoctorName()}</strong>
         </div>
         <div className="summary-item">
           <span>Date & Time:</span>
-          <strong>{selectedDate} at {selectedSlot}</strong>
+          <strong>{appointmentDate} at {selectedSlot}</strong>
         </div>
         <div className="summary-item">
           <span>Consultation Type:</span>
@@ -249,7 +471,7 @@ const BookingModal = ({ item, type, onClose }) => {
 
       <button 
         className="confirm-btn"
-        disabled={!patientDetails.name || !patientDetails.email || !patientDetails.phone || loading}
+        disabled={!patientDetails.name || !patientDetails.phone || loading}
         onClick={handleConfirmBooking}
       >
         {loading ? 'Booking...' : 'Confirm Booking'}
@@ -283,8 +505,9 @@ const BookingModal = ({ item, type, onClose }) => {
             <p>Your appointment has been confirmed. You will receive a confirmation email and SMS shortly.</p>
             <div className="confirmation-details">
               <p><strong>Booking ID:</strong> {bookingId}</p>
-              <p><strong>{getItemType()}:</strong> {getItemName()}</p>
-              <p><strong>Date & Time:</strong> {selectedDate} at {selectedSlot}</p>
+              <p><strong>Hospital:</strong> {getSelectedHospitalName()}</p>
+              <p><strong>Doctor:</strong> {getSelectedDoctorName()}</p>
+              <p><strong>Date & Time:</strong> {appointmentDate} at {selectedSlot}</p>
               <p><strong>Consultation Type:</strong> {consultationType === 'clinic' ? 'Clinic Visit' : 'Video Consultation'}</p>
               <p><strong>Amount Paid:</strong> ₹{getFee()}</p>
             </div>

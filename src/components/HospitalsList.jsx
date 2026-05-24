@@ -1,4 +1,4 @@
-// components/HospitalsList.jsx - Updated
+// components/HospitalsList.jsx - Updated with only approved hospitals
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Bed, Users, Search, Building, ChevronRight } from 'lucide-react';
 import apiService from '../services/api';
@@ -24,14 +24,14 @@ const HospitalsList = ({ onViewDetails, onBookAppointment }) => {
       setError(null);
       const response = await apiService.getAllHospitals();
       
-      // Handle different response structures
+      // Handle different response structures and filter only approved hospitals
       let hospitalsArray = [];
       if (response && Array.isArray(response)) {
-        hospitalsArray = response;
+        hospitalsArray = response.filter(h => h.status === 'approved');
       } else if (response && response.data && Array.isArray(response.data)) {
-        hospitalsArray = response.data;
+        hospitalsArray = response.data.filter(h => h.status === 'approved');
       } else if (response && response.hospitals && Array.isArray(response.hospitals)) {
-        hospitalsArray = response.hospitals;
+        hospitalsArray = response.hospitals.filter(h => h.status === 'approved');
       } else {
         hospitalsArray = [];
       }
@@ -41,17 +41,17 @@ const HospitalsList = ({ onViewDetails, onBookAppointment }) => {
       
       // Extract unique cities and types for filters
       const uniqueCities = [...new Set(hospitalsArray.map(h => {
-        if (h.city?.cityName) return h.city.cityName;
-        if (h.city && typeof h.city === 'string') return h.city;
-        return 'Unknown';
+        return h.city?.cityName || 'Unknown';
       }))];
       
       const uniqueTypes = [...new Set(hospitalsArray.map(h => {
-        if (h.hospital_type) return h.hospital_type.charAt(0).toUpperCase() + h.hospital_type.slice(1);
+        if (h.hospital_type) {
+          return h.hospital_type.charAt(0).toUpperCase() + h.hospital_type.slice(1);
+        }
         return 'General';
       }))];
       
-      setCities(uniqueCities);
+      setCities(uniqueCities.filter(city => city !== 'Unknown'));
       setHospitalTypes(uniqueTypes);
     } catch (err) {
       console.error('Error fetching hospitals:', err);
@@ -68,7 +68,7 @@ const HospitalsList = ({ onViewDetails, onBookAppointment }) => {
       results = results.filter(hospital => 
         (hospital.hospital_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (hospital.hospital_type?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (hospital.city?.cityName?.toLowerCase() || hospital.city?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (hospital.city?.cityName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (hospital.departments?.some(dept => dept.toLowerCase().includes(searchTerm.toLowerCase())))
       );
     }
@@ -81,7 +81,7 @@ const HospitalsList = ({ onViewDetails, onBookAppointment }) => {
     
     if (selectedCity) {
       results = results.filter(hospital => 
-        (hospital.city?.name === selectedCity || hospital.city === selectedCity)
+        hospital.city?.cityName === selectedCity
       );
     }
     
@@ -103,6 +103,11 @@ const HospitalsList = ({ onViewDetails, onBookAppointment }) => {
 
   const getReviewCount = (hospital) => {
     return ((hospital.total_doctors || 0) * 50 + Math.floor(Math.random() * 1000));
+  };
+
+  const handleBookAppointment = (hospital) => {
+    // Pass hospital data to booking modal with source type 'hospital'
+    onBookAppointment?.(hospital, 'hospital');
   };
 
   if (loading) {
@@ -206,7 +211,7 @@ const HospitalsList = ({ onViewDetails, onBookAppointment }) => {
               <div className="hospital-details">
                 <div className="hospital-detail">
                   <MapPin size={14} />
-                  <span>{hospital.city?.cityName || hospital.city || 'Location N/A'}</span>
+                  <span>{hospital.city?.cityName || 'Location N/A'}</span>
                 </div>
                 <div className="hospital-detail">
                   <Bed size={14} />
@@ -238,7 +243,7 @@ const HospitalsList = ({ onViewDetails, onBookAppointment }) => {
                 </button>
                 <button 
                   className="hospital-book-btn"
-                  onClick={() => onBookAppointment?.(hospital)}
+                  onClick={() => handleBookAppointment(hospital)}
                 >
                   Book Appointment
                 </button>

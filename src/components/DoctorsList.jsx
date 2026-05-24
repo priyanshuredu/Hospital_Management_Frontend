@@ -1,4 +1,4 @@
-// components/DoctorsList.jsx - Updated
+// components/DoctorsList.jsx - Updated with proper data handling
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Award, Search, Stethoscope, Building, GraduationCap, ChevronRight } from 'lucide-react';
 import apiService from '../services/api';
@@ -26,51 +26,51 @@ const DoctorsList = ({ onViewDetails, onBookAppointment }) => {
       setLoading(true);
       setError(null);
       
-      // Fetch doctors and departments in parallel
       const [doctorsRes, departmentsRes, hospitalsRes] = await Promise.all([
         apiService.getAllDoctors(),
         apiService.getAllSubDepartments(),
         apiService.getAllHospitals()
       ]);
       
-      // Handle doctors data
+      // Handle doctors data - only show doctors with approved hospital status
       let doctorsData = [];
       if (doctorsRes && Array.isArray(doctorsRes)) {
         doctorsData = doctorsRes;
-      } else if (doctorsRes && doctorsRes.data && Array.isArray(doctorsRes.data)) {
+      } else if (doctorsRes?.data && Array.isArray(doctorsRes.data)) {
         doctorsData = doctorsRes.data;
-      } else if (doctorsRes && doctorsRes.doctors && Array.isArray(doctorsRes.doctors)) {
+      } else if (doctorsRes?.doctors && Array.isArray(doctorsRes.doctors)) {
         doctorsData = doctorsRes.doctors;
-      } else {
-        doctorsData = [];
       }
+      
+      // Handle hospitals data - only approved hospitals
+      let hospitalsData = [];
+      if (hospitalsRes && Array.isArray(hospitalsRes)) {
+        hospitalsData = hospitalsRes.filter(h => h.status === 'approved');
+      } else if (hospitalsRes?.data && Array.isArray(hospitalsRes.data)) {
+        hospitalsData = hospitalsRes.data.filter(h => h.status === 'approved');
+      } else if (hospitalsRes?.hospitals && Array.isArray(hospitalsRes.hospitals)) {
+        hospitalsData = hospitalsRes.hospitals.filter(h => h.status === 'approved');
+      }
+      
+      // Filter doctors - only show doctors whose hospital is approved and active
+      const approvedHospitalIds = new Set(hospitalsData.map(h => h._id?.$oid || h._id));
+      const validDoctors = doctorsData.filter(doctor => {
+        const hospitalId = doctor.hospital?._id?.$oid || doctor.hospital?._id || doctor.hospital;
+        return approvedHospitalIds.has(hospitalId) && doctor.accountStatus === 'active';
+      });
       
       // Handle departments data
       let departmentsData = [];
       if (departmentsRes && Array.isArray(departmentsRes)) {
         departmentsData = departmentsRes;
-      } else if (departmentsRes && departmentsRes.data && Array.isArray(departmentsRes.data)) {
+      } else if (departmentsRes?.data && Array.isArray(departmentsRes.data)) {
         departmentsData = departmentsRes.data;
-      } else if (departmentsRes && departmentsRes.departments && Array.isArray(departmentsRes.departments)) {
-        departmentsData = departmentsRes.departments;
-      } else {
-        departmentsData = [];
+      } else if (departmentsRes?.subDepartments && Array.isArray(departmentsRes.subDepartments)) {
+        departmentsData = departmentsRes.subDepartments;
       }
       
-      // Handle hospitals data
-      let hospitalsData = [];
-      if (hospitalsRes && Array.isArray(hospitalsRes)) {
-        hospitalsData = hospitalsRes;
-      } else if (hospitalsRes && hospitalsRes.data && Array.isArray(hospitalsRes.data)) {
-        hospitalsData = hospitalsRes.data;
-      } else if (hospitalsRes && hospitalsRes.hospitals && Array.isArray(hospitalsRes.hospitals)) {
-        hospitalsData = hospitalsRes.hospitals;
-      } else {
-        hospitalsData = [];
-      }
-      
-      setDoctors(doctorsData);
-      setFilteredDoctors(doctorsData);
+      setDoctors(validDoctors);
+      setFilteredDoctors(validDoctors);
       setDepartments(departmentsData);
       setHospitals(hospitalsData);
     } catch (err) {
@@ -108,13 +108,13 @@ const DoctorsList = ({ onViewDetails, onBookAppointment }) => {
     }
     
     if (selectedExperience && selectedExperience !== 'All') {
-      const [min, max] = selectedExperience.split('-');
-      if (max) {
+      if (selectedExperience === '15+ Years') {
+        results = results.filter(doctor => doctor.experience >= 15);
+      } else {
+        const [min, max] = selectedExperience.split('-');
         results = results.filter(doctor => 
           doctor.experience >= parseInt(min) && doctor.experience <= parseInt(max)
         );
-      } else if (selectedExperience === '15+ Years') {
-        results = results.filter(doctor => doctor.experience >= 15);
       }
     }
     
@@ -134,33 +134,20 @@ const DoctorsList = ({ onViewDetails, onBookAppointment }) => {
   };
 
   const getDepartmentName = (doctor) => {
-    if (doctor.sub_department?.sub_departmentName) {
-      return doctor.sub_department.sub_departmentName;
-    }
-    if (typeof doctor.sub_department === 'object' && doctor.sub_department.name) {
-      return doctor.sub_department.name;
-    }
-    return 'General Medicine';
+    return doctor.sub_department?.sub_departmentName || 'General Medicine';
   };
 
   const getHospitalName = (doctor) => {
-    if (doctor.hospital?.hospital_name) {
-      return doctor.hospital.hospital_name;
-    }
-    if (typeof doctor.hospital === 'object' && doctor.hospital.name) {
-      return doctor.hospital.name;
-    }
-    return 'Hospital';
+    return doctor.hospital?.hospital_name || 'Hospital';
   };
 
   const getHospitalLocation = (doctor) => {
-    if (doctor.hospital?.city?.cityName) {
-      return doctor.hospital.city.cityName;
-    }
-    if (doctor.hospital?.city) {
-      return doctor.hospital.city;
-    }
-    return 'Location N/A';
+    return doctor.hospital?.city?.cityName || 'Location N/A';
+  };
+
+  const handleBookAppointment = (doctor) => {
+    // Pass doctor data to booking modal with source type 'doctor'
+    onBookAppointment?.(doctor, 'doctor');
   };
 
   if (loading) {
@@ -308,7 +295,7 @@ const DoctorsList = ({ onViewDetails, onBookAppointment }) => {
                 </button>
                 <button 
                   className="doctor-book-btn"
-                  onClick={() => onBookAppointment?.(doctor)}
+                  onClick={() => handleBookAppointment(doctor)}
                 >
                   Book Appointment
                 </button>

@@ -1,4 +1,4 @@
-// MainDashboard.jsx
+// MainDashboard.jsx - Updated with proper integration
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -6,7 +6,8 @@ import {
   Ambulance, Microscope, Heart, TrendingUp, Shield, Clock,
   MapPin, Phone, Mail, ChevronRight, LogIn, UserPlus, Menu, X,
   Star, Award, Globe, CheckCircle, ArrowRight, Video, MessageCircle,
-  FileText, CreditCard, Smartphone, Headphones, Search as SearchIcon
+  FileText, CreditCard, Smartphone, Headphones, Search as SearchIcon,
+  Lock
 } from 'lucide-react';
 import HospitalsList from './HospitalsList';
 import DoctorsList from './DoctorsList';
@@ -22,7 +23,7 @@ const MainDashboard = () => {
   const [selectedHospital, setSelectedHospital] = useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [bookingType, setBookingType] = useState(null);
+  const [bookingSource, setBookingSource] = useState(null);
   const [bookingItem, setBookingItem] = useState(null);
 
   useEffect(() => {
@@ -45,13 +46,14 @@ const MainDashboard = () => {
   const handleLogin = () => navigate('/login');
   const handleSignUp = () => navigate('/hospital-registeration');
   const handleHospitalLogin = () => navigate('/hospital-login');
+  const handleUserSignUp = () => navigate('/user-registeration');
 
   const handleViewHospitalDetails = (hospital) => {
     setSelectedHospital(hospital);
   };
 
-  const handleBookHospital = (hospital) => {
-    setBookingType('hospital');
+  const handleBookHospital = (hospital, source) => {
+    setBookingSource(source || 'hospital');
     setBookingItem(hospital);
     setShowBookingModal(true);
   };
@@ -60,8 +62,8 @@ const MainDashboard = () => {
     setSelectedDoctor(doctor);
   };
 
-  const handleBookDoctor = (doctor) => {
-    setBookingType('doctor');
+  const handleBookDoctor = (doctor, source) => {
+    setBookingSource(source || 'doctor');
     setBookingItem(doctor);
     setShowBookingModal(true);
   };
@@ -73,7 +75,7 @@ const MainDashboard = () => {
 
   const handleCloseBookingModal = () => {
     setShowBookingModal(false);
-    setBookingType(null);
+    setBookingSource(null);
     setBookingItem(null);
   };
 
@@ -188,9 +190,13 @@ const MainDashboard = () => {
               <LogIn size={18} />
               Login
             </button>
-            <button className="nav-btn-signup" onClick={handleSignUp}>
+            <button className="nav-btn-signup" onClick={handleUserSignUp}>
               <UserPlus size={18} />
-              Register as Hospital
+              Sign Up
+            </button>
+            <button className="nav-btn-hospital" onClick={handleSignUp}>
+              <Hospital size={18} />
+              Register Hospital
             </button>
           </div>
 
@@ -212,7 +218,8 @@ const MainDashboard = () => {
             <a href="#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
             <div className="mobile-buttons">
               <button className="mobile-login" onClick={handleLogin}>Login</button>
-              <button className="mobile-signup" onClick={handleSignUp}>Register as Hospital</button>
+              <button className="mobile-signup" onClick={handleUserSignUp}>Sign Up</button>
+              <button className="mobile-hospital" onClick={handleSignUp}>Register Hospital</button>
             </div>
           </div>
         )}
@@ -313,15 +320,19 @@ const MainDashboard = () => {
         </div>
       </section>
 
-      <HospitalsList 
-        onViewDetails={handleViewHospitalDetails}
-        onBookAppointment={handleBookHospital}
-      />
+      <section id="hospitals">
+        <HospitalsList 
+          onViewDetails={handleViewHospitalDetails}
+          onBookAppointment={handleBookHospital}
+        />
+      </section>
 
-      <DoctorsList 
-        onViewDetails={handleViewDoctorDetails}
-        onBookAppointment={handleBookDoctor}
-      />
+      <section id="doctors">
+        <DoctorsList 
+          onViewDetails={handleViewDoctorDetails}
+          onBookAppointment={handleBookDoctor}
+        />
+      </section>
 
       <section className="specialties-section">
         <div className="container">
@@ -567,11 +578,12 @@ const MainDashboard = () => {
         </div>
       </footer>
 
+      {/* Modals */}
       {selectedHospital && (
         <HospitalDetailsModal 
           hospital={selectedHospital} 
           onClose={handleCloseModals}
-          onBookAppointment={() => handleBookHospital(selectedHospital)}
+          onBookAppointment={() => handleBookHospital(selectedHospital, 'hospital')}
         />
       )}
 
@@ -579,21 +591,19 @@ const MainDashboard = () => {
         <DoctorDetailsModal 
           doctor={selectedDoctor} 
           onClose={handleCloseModals}
-          onBookAppointment={() => handleBookDoctor(selectedDoctor)}
+          onBookAppointment={() => handleBookDoctor(selectedDoctor, 'doctor')}
         />
       )}
 
       {showBookingModal && bookingItem && (
         <BookingModal 
-          item={bookingItem}
-          type={bookingType}
           onClose={handleCloseBookingModal}
+          preSelectedData={bookingItem}
+          sourceType={bookingSource}
         />
       )}
     </div>
   );
 };
-
-const Lock = ({ size }) => <span>🔒</span>;
 
 export default MainDashboard;

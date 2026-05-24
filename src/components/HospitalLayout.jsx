@@ -13,6 +13,7 @@ import DepartmentsManagement from './DepartmentManagement';
 import { useTheme } from './ThemeContext';
 import '../styles/HospitalLayout.css';
 import LabManagement from './LabManagement';
+import HospitalAppointments from './HospitalAppointments';
 
 const HospitalLayout = () => {
   const { isDarkMode } = useTheme();
@@ -28,8 +29,8 @@ const HospitalLayout = () => {
         return <ManageDoctors />;
       case 'lab':
         return <LabManagement />;
-    //   case 'state':
-    //     return <StateManagement />;
+      case 'appointments':
+        return <HospitalAppointments />;
     //   case 'district':
     //     return <DistrictManagement />;
     //   case 'city':
