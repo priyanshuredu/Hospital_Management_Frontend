@@ -45,12 +45,14 @@ const Login = () => {
       const email = response.data.email;
       const host = response.data.host
       const machine = response.data.machine;
+      const user = response.data.user;
 
       if (userId && token && userName && role) {
         sessionStorage.setItem('Token', token);
         sessionStorage.setItem('User Id', userId);
         sessionStorage.setItem('User Name', userName);
         sessionStorage.setItem('role', role);
+        sessionStorage.setItem('user', JSON.stringify(user));
         sessionStorage.setItem('email', email);
         sessionStorage.setItem('host', host);
         sessionStorage.setItem('machine', machine);
@@ -61,8 +63,14 @@ const Login = () => {
           navigate('/super-admin');
         } else if(role === 'hospital-admin') {
           navigate('/hospital');
+        } else if(role === 'lab-assistant') {
+          navigate('/lab');
+        } else if(role === 'doctor') {
+          navigate('/doctor');
+        } else if(role === 'user') {
+          navigate('/');
         } else {
-          navigation('/user')
+          navigate('/')
         }
       } else {
         setError(response.data.message || 'Login failed');

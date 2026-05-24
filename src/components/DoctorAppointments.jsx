@@ -24,6 +24,7 @@ import {
   Pill
 } from 'lucide-react';
 import { apiService } from '../services/api';
+import axios from 'axios';
 import '../styles/DoctorAppointments.css';
 
 const DoctorAppointments = () => {
@@ -40,6 +41,7 @@ const DoctorAppointments = () => {
   const [loadingPrescription, setLoadingPrescription] = useState(false);
   const [loadingLabTests, setLoadingLabTests] = useState(false);
   const [labTestsList, setLabTestsList] = useState([]);
+  const [selectedLabTest, setSelectedLabTest] = useState(null);
   const [prescriptionData, setPrescriptionData] = useState({
     precautions: '',
     medicines: [],
@@ -55,7 +57,7 @@ const DoctorAppointments = () => {
   });
 
   // Get doctor ID from localStorage or auth context
-  const doctorId = JSON.parse(localStorage.getItem('user'))?._id || '';
+  const doctorId = sessionStorage.getItem('User Id');
 
   useEffect(() => {
     fetchAppointments();
@@ -84,28 +86,23 @@ const DoctorAppointments = () => {
     }
   };
 
-  const fetchLabTestsByHospital = async (hospitalId) => {
-    if (!hospitalId) {
-      console.warn('No hospital ID available');
-      setLabTestsList([]);
-      return;
-    }
-
+  const fetchLabTests = async () => {
     setLoadingLabTests(true);
     try {
-      const response = await apiService.getLabTestsByHospital(hospitalId);
-      let labTestsData = response;
-      if (response?.data.labs) labTestsData = response.data.labs;
-      if (response?.labs) labTestsData = response.labTests;
+      const response = await axios.get('http://localhost:5000/test/all');
+      let labTestsData = response.data || response;
+      if (response?.data?.tests) labTestsData = response.data.tests;
+      if (response?.tests) labTestsData = response.tests;
       
-      // Format the lab tests data
       const formattedLabTests = Array.isArray(labTestsData) 
         ? labTestsData.map(test => ({
-            id: test._id || test.id,
-            name: test.test_name || test.name,
-            price: test.price,
+            _id: test._id || test.id,
+            name: test.testName || test.test_name || test.name,
+            price: test.fee || test.price,
             category: test.category,
-            preparation: test.preparation_instructions
+            preparation: test.preparation_instructions,
+            normal_range: test.normal_range,
+            unit: test.unit
           }))
         : [];
       
@@ -121,7 +118,6 @@ const DoctorAppointments = () => {
   const filterAndSortAppointments = () => {
     let filtered = [...appointments];
 
-    // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(apt =>
         apt.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -130,7 +126,6 @@ const DoctorAppointments = () => {
       );
     }
 
-    // Apply attendance status filter
     if (filterStatus !== 'all') {
       if (filterStatus === 'attended') {
         filtered = filtered.filter(apt => apt.appointmentAttended === true);
@@ -139,7 +134,6 @@ const DoctorAppointments = () => {
       }
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
       switch(sortBy) {
@@ -191,14 +185,9 @@ const DoctorAppointments = () => {
 
   const openPrescriptionModal = async (appointment) => {
     setSelectedAppointment(appointment);
-    // Get hospital ID from appointment
-    const hospitalId = appointment.doctor?.hospital?._id || 
-                      appointment.doctor?.hospital || 
-                      appointment.hospital?._id;
-    
-    if (hospitalId) {
-      await fetchLabTestsByHospital(hospitalId);
-    }
+    setSelectedLabTest(null);
+    setPrescriptionData(prev => ({ ...prev, labTests: [] }));
+    await fetchLabTests();
     setShowPrescriptionModal(true);
   };
 
@@ -211,8 +200,8 @@ const DoctorAppointments = () => {
     setLoadingPrescription(true);
     try {
       const prescriptionPayload = {
-        appointmentId: selectedAppointment._id,
-        doctorId: doctorId,
+        appointment: selectedAppointment._id,
+        doctor: doctorId,
         patientId: selectedAppointment.user?._id || selectedAppointment.user,
         precautions: prescriptionData.precautions,
         medicines: prescriptionData.medicines.map(med => ({
@@ -222,19 +211,15 @@ const DoctorAppointments = () => {
           duration: med.duration,
           instructions: med.instructions || ''
         })),
-        labTests: prescriptionData.labTests.map(test => ({
-          testId: test.id,
-          testName: test.name,
-          price: test.price,
-          status: 'pending'
-        })),
-        followUpDate: prescriptionData.followUpDate || null,
+        test: prescriptionData.labTests.length > 0 ? prescriptionData.labTests[0]._id : null,
+        follow_up: prescriptionData.followUpDate || null,
         prescribedDate: new Date().toISOString()
       };
       
+      console.log("Prescription:", prescriptionPayload);
       const response = await apiService.createPrescription(prescriptionPayload);
       
-      if (response.success || response.message === 'success') {
+      if (response.prescription || response.message === 'Prescription created.') {
         alert('Prescription added successfully!');
         setShowPrescriptionModal(false);
         resetPrescriptionForm();
@@ -257,6 +242,7 @@ const DoctorAppointments = () => {
       labTests: [],
       followUpDate: ''
     });
+    setSelectedLabTest(null);
     setCurrentMedicine({
       name: '',
       dosage: '',
@@ -291,17 +277,21 @@ const DoctorAppointments = () => {
     });
   };
 
-  const handleLabTestToggle = (test) => {
-    const isSelected = prescriptionData.labTests.some(t => t.id === test.id);
-    if (isSelected) {
+  // Single select lab test handler using _id
+  const handleLabTestSelect = (test) => {
+    if (selectedLabTest?._id === test._id) {
+      // Deselect if already selected
+      setSelectedLabTest(null);
       setPrescriptionData({
         ...prescriptionData,
-        labTests: prescriptionData.labTests.filter(t => t.id !== test.id)
+        labTests: []
       });
     } else {
+      // Select new test (replace existing)
+      setSelectedLabTest(test);
       setPrescriptionData({
         ...prescriptionData,
-        labTests: [...prescriptionData.labTests, test]
+        labTests: [test]
       });
     }
   };
@@ -678,45 +668,54 @@ const DoctorAppointments = () => {
                   />
                 </div>
 
-                {/* Lab Tests Section */}
+                {/* Lab Tests Section - Single Select using _id */}
                 <div className="form-group">
-                  <label><FlaskConical size={16} /> Lab Tests (Select multiple)</label>
+                  <label><FlaskConical size={16} /> Lab Tests (Select one)</label>
                   {loadingLabTests ? (
                     <div className="loading-lab-tests">Loading lab tests...</div>
                   ) : labTestsList.length > 0 ? (
                     <div className="lab-tests-dropdown">
                       <div className="lab-tests-container">
                         {labTestsList.map((test) => (
-                          <label key={test.id} className="lab-test-checkbox">
+                          <label key={test._id} className={`lab-test-radio ${selectedLabTest?._id === test._id ? 'selected' : ''}`}>
                             <input
-                              type="checkbox"
-                              checked={prescriptionData.labTests.some(t => t.id === test.id)}
-                              onChange={() => handleLabTestToggle(test)}
+                              type="radio"
+                              name="labTest"
+                              checked={selectedLabTest?._id === test._id}
+                              onChange={() => handleLabTestSelect(test)}
                             />
                             <span className="test-name">{test.name}</span>
                             {test.price && <span className="test-price">₹{test.price}</span>}
                             {test.category && <span className="test-category">{test.category}</span>}
+                            {test.normal_range && <span className="test-normal-range">Normal: {test.normal_range}</span>}
                           </label>
                         ))}
                       </div>
                     </div>
                   ) : (
                     <div className="no-lab-tests">
-                      <p>No lab tests available for this hospital</p>
+                      <p>No lab tests available</p>
                     </div>
                   )}
                   
-                  {prescriptionData.labTests.length > 0 && (
-                    <div className="selected-lab-tests">
-                      <strong>Selected Tests ({prescriptionData.labTests.length}):</strong>
-                      <div className="selected-tags">
-                        {prescriptionData.labTests.map((test) => (
-                          <span key={test.id} className="test-tag">
-                            {test.name}
-                            {test.price && <span className="test-price-tag"> (₹{test.price})</span>}
-                            <button onClick={() => handleLabTestToggle(test)}>×</button>
-                          </span>
-                        ))}
+                  {selectedLabTest && (
+                    <div className="selected-lab-test">
+                      <strong>Selected Test:</strong>
+                      <div className="selected-test-card">
+                        <span className="test-name">{selectedLabTest.name}</span>
+                        {selectedLabTest.price && <span className="test-price">₹{selectedLabTest.price}</span>}
+                        {selectedLabTest.category && <span className="test-category">{selectedLabTest.category}</span>}
+                        {selectedLabTest.preparation && (
+                          <div className="test-preparation">
+                            📋 Preparation: {selectedLabTest.preparation}
+                          </div>
+                        )}
+                        <button 
+                          className="remove-test-btn" 
+                          onClick={() => handleLabTestSelect(selectedLabTest)}
+                        >
+                          × Remove
+                        </button>
                       </div>
                     </div>
                   )}

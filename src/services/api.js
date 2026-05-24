@@ -168,9 +168,9 @@ getLabTestsByHospital: async (hospitalId) => {
 },
 
 // Add prescription
-addPrescription: async (prescriptionData) => {
+createPrescription: async (prescriptionData) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/prescription/add`, prescriptionData);
+    const response = await axios.post(`${API_BASE_URL}/prescription/create`, prescriptionData);
     return response.data;
   } catch (error) {
     throw error;

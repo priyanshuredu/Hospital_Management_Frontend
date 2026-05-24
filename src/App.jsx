@@ -31,8 +31,8 @@ function App() {
         <Route path='/hospital-registeration' element={<HospitalRegistration />}></Route>
         <Route path='/super-admin' element={role === 'admin' ? <MainLayout /> : <NotAuthorized/>}></Route>
         <Route path='/hospital' element={role === 'hospital-admin' ? <HospitalLayout /> : <NotAuthorized/>}></Route>
-        <Route path='/doctor' element={<DoctorLayout/>}></Route>
-        <Route path='/lab' element={<LabAssistantLayout/>}></Route>
+        <Route path='/doctor' element={role === 'doctor' ? <DoctorLayout/> : <NotAuthorized/>}></Route>
+        <Route path='/lab' element={role === 'lab-assistant' ? <LabAssistantLayout/> : <NotAuthorized/>}></Route>
         <Route path='*' element={<NotFound/>}></Route>
       </Routes>
       </BrowserRouter>

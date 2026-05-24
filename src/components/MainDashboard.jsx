@@ -25,19 +25,26 @@ const MainDashboard = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingSource, setBookingSource] = useState(null);
   const [bookingItem, setBookingItem] = useState(null);
+  const [token,setToken] = useState(null);
 
   useEffect(() => {
     setIsVisible(true);
     
-    const token = sessionStorage.getItem('Token');
+    setToken(sessionStorage.getItem('Token'));
     const role = sessionStorage.getItem('role');
     
     if (token && role) {
       setTimeout(() => {
-        if (role === 'admin') {
+        if (role === "admin") {
           navigate('/super-admin');
-        } else if (role === 'user') {
-          navigate('/user');
+        } else if(role === 'hospital-admin') {
+          navigate('/hospital');
+        } else if(role === 'lab-assistant') {
+          navigate('/lab');
+        } else if(role === 'doctor') {
+          navigate('/doctor');
+        } else if(role === 'user') {
+          navigate('/');
         }
       }, 2000);
     }
@@ -47,6 +54,10 @@ const MainDashboard = () => {
   const handleSignUp = () => navigate('/hospital-registeration');
   const handleHospitalLogin = () => navigate('/hospital-login');
   const handleUserSignUp = () => navigate('/user-registeration');
+  const handleLogOut = () => {
+    sessionStorage.clear();
+    navigate('/login');
+  }
 
   const handleViewHospitalDetails = (hospital) => {
     setSelectedHospital(hospital);
@@ -186,7 +197,17 @@ const MainDashboard = () => {
           </div>
 
           <div className="nav-buttons">
-            <button className="nav-btn-login" onClick={handleLogin}>
+            {
+              token ? (
+              <>
+              <button className="nav-btn-login" onClick={handleLogOut}>
+              Log Out
+              <LogIn size={18} />
+            </button>
+              </>
+            ) : (
+                <>
+                <button className="nav-btn-login" onClick={handleLogin}>
               <LogIn size={18} />
               Login
             </button>
@@ -198,6 +219,9 @@ const MainDashboard = () => {
               <Hospital size={18} />
               Register Hospital
             </button>
+            </>
+              )
+            }
           </div>
 
           <button 
@@ -217,9 +241,19 @@ const MainDashboard = () => {
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How it Works</a>
             <a href="#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
             <div className="mobile-buttons">
-              <button className="mobile-login" onClick={handleLogin}>Login</button>
-              <button className="mobile-signup" onClick={handleUserSignUp}>Sign Up</button>
-              <button className="mobile-hospital" onClick={handleSignUp}>Register Hospital</button>
+              {
+                token ? (
+                <>
+                <button className="mobile-login" onClick={handleLogOut}>Log Out</button>
+                </>
+              ) : (
+                  <>
+                  <button className="mobile-login" onClick={handleLogin}>Login</button>
+                  <button className="mobile-signup" onClick={handleUserSignUp}>Sign Up</button>
+                  <button className="mobile-hospital" onClick={handleSignUp}>Register Hospital</button>
+                  </>
+                )
+              }
             </div>
           </div>
         )}
@@ -255,13 +289,19 @@ const MainDashboard = () => {
             </div>
 
             <div className="hero-buttons">
-              <button className="btn-primary-hero" onClick={handleLogin}>
-                Book Appointment
+              <button className="btn-primary-hero" >
+                <a  href="#hospitals">Book Appointment</a>
                 <ArrowRight size={18} />
               </button>
-              <button className="btn-secondary-hero" onClick={handleHospitalLogin}>
-                Hospital Login
-              </button>
+              {
+                token ? (<></>) : (
+                  <>
+                  <button className="btn-secondary-hero" onClick={handleHospitalLogin}>
+                  Hospital Login
+                  </button>
+                  </>
+                )
+              }
             </div>
 
             <div className="trust-badges">
@@ -382,7 +422,9 @@ const MainDashboard = () => {
         </div>
       </section>
 
-      <section className="hospital-cta-section">
+      {
+        token ? (<></>) : (
+          <section className="hospital-cta-section">
         <div className="hospital-cta-content">
           <div className="cta-left">
             <div className="cta-badge">For Hospitals</div>
@@ -420,6 +462,8 @@ const MainDashboard = () => {
           </div>
         </div>
       </section>
+        )
+      }
 
       <section className="testimonials-section">
         <div className="container">

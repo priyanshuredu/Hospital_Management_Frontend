@@ -12,7 +12,11 @@ import {
   Calendar,
   ChevronRight,
   Download,
-  Eye
+  Eye,
+  FlaskConical,
+  Hospital,
+  DollarSign,
+  ClipboardList
 } from 'lucide-react';
 import '../styles/LabAssistantDashboard.css';
 
@@ -20,12 +24,12 @@ const API_URL = 'http://localhost:5000';
 
 const LabAssistantDashboard = () => {
   const [stats, setStats] = useState({
-    pendingTests: 0,
-    inProgressTests: 0,
-    completedTests: 0,
     totalTests: 0,
-    todaySamples: 0,
-    patientsServed: 0
+    activeTests: 0,
+    inactiveTests: 0,
+    uniqueLabs: 0,
+    uniqueHospitals: 0,
+    avgFee: 0
   });
   const [recentTests, setRecentTests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,17 +41,17 @@ const LabAssistantDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const token = sessionStorage.getItem('token');
-      const [statsRes, testsRes] = await Promise.all([
-        axios.get(`${API_URL}/lab-assistant/stats`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API_URL}/lab-assistant/recent-tests`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
+      const response = await axios.get(`${API_URL}/test/recent-test`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
-      setStats(statsRes.data);
-      setRecentTests(testsRes.data.tests);
+      const testsData = response.data.tests || [];
+      setRecentTests(testsData);
+      
+      // Calculate statistics from the data
+      calculateStats(testsData);
+      
+      console.log("Recent tests data:", testsData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -55,22 +59,89 @@ const LabAssistantDashboard = () => {
     }
   };
 
-  const statCards = [
-    { title: 'Pending Tests', value: stats.pendingTests, icon: Clock, color: 'pending', bgColor: '#fff3cd' },
-    { title: 'In Progress', value: stats.inProgressTests, icon: Activity, color: 'progress', bgColor: '#cfe2ff' },
-    { title: 'Completed', value: stats.completedTests, icon: CheckCircle, color: 'completed', bgColor: '#d1e7dd' },
-    { title: 'Today\'s Samples', value: stats.todaySamples, icon: Calendar, color: 'info', bgColor: '#f8d7da' },
-  ];
+  const calculateStats = (tests) => {
+    const activeTests = tests.filter(test => test.status === 'active').length;
+    const inactiveTests = tests.filter(test => test.status === 'inactive').length;
+    
+    // Get unique labs
+    const uniqueLabs = new Set(tests.map(test => test.lab?._id || test.lab)).size;
+    
+    // Get unique hospitals
+    const uniqueHospitals = new Set(tests.map(test => test.hospital?._id || test.hospital)).size;
+    
+    // Calculate average fee
+    const totalFee = tests.reduce((sum, test) => sum + (test.fee || 0), 0);
+    const avgFee = tests.length > 0 ? totalFee / tests.length : 0;
+    
+    setStats({
+      totalTests: tests.length,
+      activeTests: activeTests,
+      inactiveTests: inactiveTests,
+      uniqueLabs: uniqueLabs,
+      uniqueHospitals: uniqueHospitals,
+      avgFee: avgFee
+    });
+  };
 
   const getStatusBadge = (status) => {
-    const badges = {
-      pending: <span className="badge pending"><Clock size={12} /> Pending</span>,
-      'in-progress': <span className="badge progress"><Activity size={12} /> In Progress</span>,
-      completed: <span className="badge completed"><CheckCircle size={12} /> Completed</span>,
-      approved: <span className="badge approved"><CheckCircle size={12} /> Approved</span>
-    };
-    return badges[status] || badges.pending;
+    if (status === 'active') {
+      return <span className="badge active"><CheckCircle size={12} /> Active</span>;
+    } else if (status === 'inactive') {
+      return <span className="badge inactive"><AlertCircle size={12} /> Inactive</span>;
+    }
+    return <span className="badge pending"><Clock size={12} /> {status}</span>;
   };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const statCards = [
+    { 
+      title: 'Total Tests', 
+      value: stats.totalTests, 
+      icon: TestTube, 
+      color: 'primary', 
+      bgColor: '#e3f2fd' 
+    },
+    { 
+      title: 'Active Tests', 
+      value: stats.activeTests, 
+      icon: CheckCircle, 
+      color: 'success', 
+      bgColor: '#d1e7dd' 
+    },
+    { 
+      title: 'Inactive Tests', 
+      value: stats.inactiveTests, 
+      icon: AlertCircle, 
+      color: 'danger', 
+      bgColor: '#f8d7da' 
+    },
+    { 
+      title: 'Avg. Fee', 
+      value: `₹${Math.round(stats.avgFee)}`, 
+      icon: DollarSign, 
+      color: 'warning', 
+      bgColor: '#fff3cd' 
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="lab-dashboard">
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lab-dashboard">
@@ -91,7 +162,7 @@ const LabAssistantDashboard = () => {
         {statCards.map((stat, index) => (
           <div key={index} className={`stat-card ${stat.color}`}>
             <div className="stat-icon" style={{ background: stat.bgColor }}>
-              <stat.icon size={24} color={stat.color === 'pending' ? '#856404' : stat.color === 'progress' ? '#084298' : '#0f5132'} />
+              <stat.icon size={24} />
             </div>
             <div className="stat-info">
               <h3>{stat.value}</h3>
@@ -104,24 +175,24 @@ const LabAssistantDashboard = () => {
       {/* Additional Stats */}
       <div className="additional-stats">
         <div className="stat-box">
-          <Users size={20} />
+          <FlaskConical size={20} />
           <div>
-            <h4>{stats.patientsServed}</h4>
-            <p>Patients Served</p>
+            <h4>{stats.uniqueLabs}</h4>
+            <p>Active Labs</p>
           </div>
         </div>
         <div className="stat-box">
-          <TestTube size={20} />
+          <Hospital size={20} />
           <div>
-            <h4>{stats.totalTests}</h4>
-            <p>Total Tests</p>
+            <h4>{stats.uniqueHospitals}</h4>
+            <p>Hospitals</p>
           </div>
         </div>
         <div className="stat-box">
           <TrendingUp size={20} />
           <div>
-            <h4>{Math.round((stats.completedTests / stats.totalTests) * 100) || 0}%</h4>
-            <p>Completion Rate</p>
+            <h4>{stats.totalTests > 0 ? Math.round((stats.activeTests / stats.totalTests) * 100) : 0}%</h4>
+            <p>Active Rate</p>
           </div>
         </div>
       </div>
@@ -129,7 +200,7 @@ const LabAssistantDashboard = () => {
       {/* Recent Tests Table */}
       <div className="recent-tests-section">
         <div className="section-header">
-          <h2>Recent Test Requests</h2>
+          <h2>Recent Tests</h2>
           <button className="view-all-btn" onClick={() => window.location.href = '#all-tests'}>
             View All <ChevronRight size={16} />
           </button>
@@ -139,20 +210,34 @@ const LabAssistantDashboard = () => {
           <table className="tests-table">
             <thead>
               <tr>
-                <th>Patient Name</th>
-                <th>Test Type</th>
-                <th>Request Date</th>
+                <th>Test Name</th>
+                <th>Lab</th>
+                <th>Hospital</th>
+                <th>Fee (₹)</th>
                 <th>Status</th>
+                <th>Precautions</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {recentTests.map((test) => (
+              {recentTests.map((test, index) => (
                 <tr key={test._id}>
-                  <td>{test.patientName}</td>
-                  <td>{test.testType}</td>
-                  <td>{new Date(test.createdAt).toLocaleDateString()}</td>
+                  <td className="test-name">
+                    <strong>{test.testName}</strong>
+                  </td>
+                  <td>{test.lab?.labName || 'N/A'}</td>
+                  <td>{test.hospital?.hospital_name || 'N/A'}</td>
+                  <td>₹{test.fee}</td>
                   <td>{getStatusBadge(test.status)}</td>
+                  <td>
+                    {test.precautions ? (
+                      <span className="precautions-text" title={test.precautions}>
+                        {test.precautions.length > 30 ? test.precautions.substring(0, 30) + '...' : test.precautions}
+                      </span>
+                    ) : (
+                      'No precautions'
+                    )}
+                  </td>
                   <td>
                     <button className="action-btn view" title="View Details">
                       <Eye size={16} />
@@ -162,7 +247,12 @@ const LabAssistantDashboard = () => {
               ))}
               {recentTests.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="no-data">No recent tests found</td>
+                  <td colSpan="7" className="no-data">
+                    <div className="no-data-content">
+                      <TestTube size={48} />
+                      <p>No tests found</p>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -170,21 +260,43 @@ const LabAssistantDashboard = () => {
         </div>
       </div>
 
+      {/* Test Categories Summary */}
+      {recentTests.length > 0 && (
+        <div className="test-summary">
+          <h3>Test Summary by Lab</h3>
+          <div className="summary-grid">
+            {[...new Map(recentTests.map(test => [test.lab?._id, test.lab])).values()].map(lab => {
+              if (!lab) return null;
+              const labTests = recentTests.filter(t => t.lab?._id === lab._id);
+              return (
+                <div key={lab._id} className="summary-card">
+                  <FlaskConical size={20} />
+                  <div>
+                    <h4>{lab.labName}</h4>
+                    <p>{labTests.length} tests • ₹{Math.round(labTests.reduce((sum, t) => sum + t.fee, 0) / labTests.length)} avg</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div className="quick-actions">
         <h3>Quick Actions</h3>
         <div className="actions-grid">
-          <button className="action-card" onClick={() => window.location.href = '#pending-tests'}>
+          <button className="action-card" onClick={() => window.location.href = '#add-test'}>
             <TestTube size={24} />
-            <span>Start New Test</span>
+            <span>Add New Test</span>
           </button>
-          <button className="action-card" onClick={() => window.location.href = '#generate-report'}>
-            <FileText size={24} />
-            <span>Generate Report</span>
+          <button className="action-card" onClick={() => window.location.href = '#manage-tests'}>
+            <ClipboardList size={24} />
+            <span>Manage Tests</span>
           </button>
-          <button className="action-card" onClick={() => window.location.href = '#sample-tracking'}>
+          <button className="action-card" onClick={() => window.location.href = '#lab-info'}>
             <Activity size={24} />
-            <span>Track Samples</span>
+            <span>Lab Information</span>
           </button>
         </div>
       </div>
