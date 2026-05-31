@@ -425,7 +425,7 @@ const LabTests = ({ activeTab }) => {
                 </div>
                 
                 <div className="test-card-footer">
-                  {test.status === 'pending' && (
+                  {test.reportStatus === 'pending' && (
                     <>
                       <button 
                         className="btn-start"
@@ -446,7 +446,7 @@ const LabTests = ({ activeTab }) => {
                       </button>
                     </>
                   )}
-                  {test.status === 'in-progress' && (
+                  {test.reportStatus === 'in-process' && (
                     <>
                       <button 
                         className="btn-result"
@@ -467,7 +467,7 @@ const LabTests = ({ activeTab }) => {
                       </button>
                     </>
                   )}
-                  {test.status === 'completed' && (
+                  {test.reportStatus === 'completed' && (
                     <button className="btn-view-result">
                       <Download size={16} />
                       Download Report

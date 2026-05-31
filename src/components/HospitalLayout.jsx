@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
-import HospitalSidebar from './HospitalSidebar';
+import UnifiedSidebar from './UnifiedSidebar';
 import HospitalHome from './HospitalHome';
 import DoctorRegistration from './DoctorRegistration';
 import ManageDoctors from './ManageDoctors';
 import EditProfile from './EditProfile';
 import ResetPassword from './ResetPassword';
-// import Hospitals from './Hospitals';
-// import StateManagement from './StateManagement';
-// import DistrictManagement from './DistrictManagement';
-// import CityManagement from './CityManagement';
 import DepartmentsManagement from './DepartmentManagement';
-import { useTheme } from './ThemeContext';
-import '../styles/HospitalLayout.css';
 import LabManagement from './LabManagement';
 import HospitalAppointments from './HospitalAppointments';
+import { useTheme } from './ThemeContext';
+import '../styles/HospitalLayout.css';
+import DoctorsReport from './DoctorsReport';
+import LabsReport from './LabsReport';
 
 const HospitalLayout = () => {
   const { isDarkMode } = useTheme();
@@ -31,16 +29,18 @@ const HospitalLayout = () => {
         return <LabManagement />;
       case 'appointments':
         return <HospitalAppointments />;
-    //   case 'district':
-    //     return <DistrictManagement />;
-    //   case 'city':
-    //     return <CityManagement />;
       case 'departments':
         return <DepartmentsManagement />;
+      case 'doctor-report':
+        return <DoctorsReport/>;
+      case 'lab-report':
+        return <LabsReport/>;
       case 'edit-profile':
         return <EditProfile />;
       case 'reset-password':
         return <ResetPassword />;
+      case 'notifications':
+        return <div>Notifications Component</div>;
       default:
         return <HospitalHome />;
     }
@@ -48,7 +48,11 @@ const HospitalLayout = () => {
 
   return (
     <div className={`main-layout ${isDarkMode ? 'dark' : 'light'}`}>
-      <HospitalSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <UnifiedSidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        userRole="hospital-admin"
+      />
       <main className="main-content">
         {renderContent()}
       </main>

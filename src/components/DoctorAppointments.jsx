@@ -56,9 +56,6 @@ const DoctorAppointments = () => {
     instructions: ''
   });
 
-  // Get doctor ID from localStorage or auth context
-  const doctorId = sessionStorage.getItem('User Id');
-
   useEffect(() => {
     fetchAppointments();
   }, []);
@@ -201,7 +198,6 @@ const DoctorAppointments = () => {
     try {
       const prescriptionPayload = {
         appointment: selectedAppointment._id,
-        doctor: doctorId,
         patientId: selectedAppointment.user?._id || selectedAppointment.user,
         precautions: prescriptionData.precautions,
         medicines: prescriptionData.medicines.map(med => ({
@@ -559,12 +555,16 @@ const DoctorAppointments = () => {
               </div>
 
               <div className="modal-actions">
-                <button 
-                  className="prescription-btn"
-                  onClick={() => openPrescriptionModal(selectedAppointment)}
-                >
-                  <PlusCircle size={18} /> Add Prescription
-                </button>
+                {
+                  selectedAppointment.appointmentAttended ? (
+                    <button 
+                      className="prescription-btn"
+                      onClick={() => openPrescriptionModal(selectedAppointment)}
+                    >
+                      <PlusCircle size={18} /> Add Prescription
+                    </button>
+                  ) : (<></>)
+                }
                 <button className="close-modal-btn" onClick={() => setSelectedAppointment(null)}>
                   Close
                 </button>

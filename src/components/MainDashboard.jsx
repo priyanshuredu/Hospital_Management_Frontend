@@ -1,4 +1,4 @@
-// MainDashboard.jsx - Updated with proper integration
+// MainDashboard.jsx - Updated with Sidebar instead of Dropdown
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -7,7 +7,8 @@ import {
   MapPin, Phone, Mail, ChevronRight, LogIn, UserPlus, Menu, X,
   Star, Award, Globe, CheckCircle, ArrowRight, Video, MessageCircle,
   FileText, CreditCard, Smartphone, Headphones, Search as SearchIcon,
-  Lock
+  Lock, User, Settings, History, FileText as ReportIcon, LogOut,
+  Key, Edit2, ChevronDown, UserCircle, ChevronLeft
 } from 'lucide-react';
 import HospitalsList from './HospitalsList';
 import DoctorsList from './DoctorsList';
@@ -25,39 +26,69 @@ const MainDashboard = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingSource, setBookingSource] = useState(null);
   const [bookingItem, setBookingItem] = useState(null);
-  const [token,setToken] = useState(null);
+  const [token, setToken] = useState(null);
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
     
-    setToken(sessionStorage.getItem('Token'));
-    const role = sessionStorage.getItem('role');
+    const storedToken = sessionStorage.getItem('Token');
+    const name = sessionStorage.getItem('name') || sessionStorage.getItem('hospitalName') || 'User';
+    const email = sessionStorage.getItem('email') || '';
     
-    if (token && role) {
-      setTimeout(() => {
-        if (role === "admin") {
-          navigate('/super-admin');
-        } else if(role === 'hospital-admin') {
-          navigate('/hospital');
-        } else if(role === 'lab-assistant') {
-          navigate('/lab');
-        } else if(role === 'doctor') {
-          navigate('/doctor');
-        } else if(role === 'user') {
-          navigate('/');
-        }
-      }, 2000);
+    setToken(storedToken);
+    setUserName(name);
+    setUserEmail(email);
+  }, []);
+
+  // Prevent body scroll when sidebar is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
-  }, [navigate]);
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSidebarOpen]);
 
   const handleLogin = () => navigate('/login');
   const handleSignUp = () => navigate('/hospital-registeration');
   const handleHospitalLogin = () => navigate('/hospital-login');
   const handleUserSignUp = () => navigate('/user-registeration');
+  
   const handleLogOut = () => {
     sessionStorage.clear();
     navigate('/login');
-  }
+  };
+
+  const handleEditProfile = () => {
+    setIsSidebarOpen(false);
+    navigate('/edit-profile');
+  };
+
+  const handleResetPassword = () => {
+    setIsSidebarOpen(false);
+    navigate('/reset-password');
+  };
+
+  const handleAppointmentHistory = () => {
+    setIsSidebarOpen(false);
+    navigate('/appointment-history');
+  };
+
+  const handleReports = () => {
+    setIsSidebarOpen(false);
+    navigate('/my-reports');
+  };
+
+  const handleViewProfile = () => {
+    setIsSidebarOpen(false);
+    navigate('/profile');
+  };
 
   const handleViewHospitalDetails = (hospital) => {
     setSelectedHospital(hospital);
@@ -197,31 +228,30 @@ const MainDashboard = () => {
           </div>
 
           <div className="nav-buttons">
-            {
-              token ? (
-              <>
-              <button className="nav-btn-login" onClick={handleLogOut}>
-              Log Out
-              <LogIn size={18} />
-            </button>
-              </>
+            {token ? (
+              <button 
+                className="profile-btn"
+                onClick={() => setIsSidebarOpen(true)}
+              >
+                <UserCircle color='#2a58ff' size={28} />
+                <span className="profile-name">{userName.split(' ')[0]}</span>
+              </button>
             ) : (
-                <>
+              <>
                 <button className="nav-btn-login" onClick={handleLogin}>
-              <LogIn size={18} />
-              Login
-            </button>
-            <button className="nav-btn-signup" onClick={handleUserSignUp}>
-              <UserPlus size={18} />
-              Sign Up
-            </button>
-            <button className="nav-btn-hospital" onClick={handleSignUp}>
-              <Hospital size={18} />
-              Register Hospital
-            </button>
-            </>
-              )
-            }
+                  <LogIn size={18} />
+                  Login
+                </button>
+                <button className="nav-btn-signup" onClick={handleUserSignUp}>
+                  <UserPlus size={18} />
+                  Sign Up
+                </button>
+                <button className="nav-btn-hospital" onClick={handleSignUp}>
+                  <Hospital size={18} />
+                  Register Hospital
+                </button>
+              </>
+            )}
           </div>
 
           <button 
@@ -241,23 +271,64 @@ const MainDashboard = () => {
             <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>How it Works</a>
             <a href="#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
             <div className="mobile-buttons">
-              {
-                token ? (
+              {token ? (
                 <>
-                <button className="mobile-login" onClick={handleLogOut}>Log Out</button>
+                  <button className="mobile-logout" onClick={handleLogOut}>Log Out</button>
+                  <button className="mobile-profile" onClick={handleViewProfile}>Profile</button>
                 </>
               ) : (
-                  <>
+                <>
                   <button className="mobile-login" onClick={handleLogin}>Login</button>
                   <button className="mobile-signup" onClick={handleUserSignUp}>Sign Up</button>
                   <button className="mobile-hospital" onClick={handleSignUp}>Register Hospital</button>
-                  </>
-                )
-              }
+                </>
+              )}
             </div>
           </div>
         )}
       </header>
+
+      {/* Profile Sidebar */}
+      <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={() => setIsSidebarOpen(false)} />
+      <div className={`profile-sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <button className="sidebar-close-btn" onClick={() => setIsSidebarOpen(false)}>
+            <ChevronLeft size={24} />
+          </button>
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">{userName}</div>
+            <div className="sidebar-user-email">{userEmail}</div>
+          </div>
+        </div>
+        
+        <div className="sidebar-menu">
+          <button className="sidebar-menu-item" onClick={handleViewProfile}>
+            <User size={20} />
+            <span>View Profile</span>
+          </button>
+          <button className="sidebar-menu-item" onClick={handleEditProfile}>
+            <Edit2 size={20} />
+            <span>Edit Profile</span>
+          </button>
+          <button className="sidebar-menu-item" onClick={handleResetPassword}>
+            <Key size={20} />
+            <span>Reset Password</span>
+          </button>
+          <button className="sidebar-menu-item" onClick={handleAppointmentHistory}>
+            <History size={20} />
+            <span>Appointment History</span>
+          </button>
+          <button className="sidebar-menu-item" onClick={handleReports}>
+            <ReportIcon size={20} />
+            <span>Medical Reports</span>
+          </button>
+          <div className="sidebar-divider"></div>
+          <button className="sidebar-menu-item logout" onClick={handleLogOut}>
+            <LogOut size={20} />
+            <span>Log Out</span>
+          </button>
+        </div>
+      </div>
 
       <section id="home" className="hero-section">
         <div className="hero-overlay"></div>
@@ -276,7 +347,7 @@ const MainDashboard = () => {
               Get quality healthcare from the comfort of your home or at nearby hospitals.
             </p>
             
-            <div className="search-bar">
+            {/* <div className="search-bar">
               <input 
                 type="text" 
                 placeholder="Search for doctors, specialties, or hospitals..." 
@@ -286,22 +357,18 @@ const MainDashboard = () => {
                 Search
                 <ChevronRight size={18} />
               </button>
-            </div>
+            </div> */}
 
             <div className="hero-buttons">
-              <button className="btn-primary-hero" >
-                <a  href="#hospitals">Book Appointment</a>
+              <button className="btn-primary-hero" onClick={() => document.getElementById('hospitals')?.scrollIntoView({ behavior: 'smooth' })}>
+                Book Appointment
                 <ArrowRight size={18} />
               </button>
-              {
-                token ? (<></>) : (
-                  <>
-                  <button className="btn-secondary-hero" onClick={handleHospitalLogin}>
+              {!token && (
+                <button className="btn-secondary-hero" onClick={handleHospitalLogin}>
                   Hospital Login
-                  </button>
-                  </>
-                )
-              }
+                </button>
+              )}
             </div>
 
             <div className="trust-badges">
@@ -360,18 +427,23 @@ const MainDashboard = () => {
         </div>
       </section>
 
-      <section id="hospitals">
-        <HospitalsList 
-          onViewDetails={handleViewHospitalDetails}
-          onBookAppointment={handleBookHospital}
-        />
+      <section id="hospitals" className="hospitals-section">
+        <div className="container">
+          <HospitalsList 
+            onViewDetails={handleViewHospitalDetails}
+            onBookAppointment={handleBookHospital}
+          />
+        </div>
       </section>
 
-      <section id="doctors">
-        <DoctorsList 
-          onViewDetails={handleViewDoctorDetails}
-          onBookAppointment={handleBookDoctor}
-        />
+      <section id="doctors" className="doctors-section">
+        <div className="container">
+            
+          <DoctorsList 
+            onViewDetails={handleViewDoctorDetails}
+            onBookAppointment={handleBookDoctor}
+          />
+        </div>
       </section>
 
       <section className="specialties-section">
@@ -422,48 +494,46 @@ const MainDashboard = () => {
         </div>
       </section>
 
-      {
-        token ? (<></>) : (
-          <section className="hospital-cta-section">
-        <div className="hospital-cta-content">
-          <div className="cta-left">
-            <div className="cta-badge">For Hospitals</div>
-            <h2 className="cta-title">List Your Hospital on Our Platform</h2>
-            <p className="cta-description">
-              Join 1000+ hospitals already using SmarTechHealth to manage appointments, 
-              reach more patients, and streamline operations.
-            </p>
-            <ul className="cta-benefits">
-              <li><CheckCircle size={18} /> Increase patient reach by 200%</li>
-              <li><CheckCircle size={18} /> Free 30-day trial with full features</li>
-              <li><CheckCircle size={18} /> Dedicated account manager support</li>
-              <li><CheckCircle size={18} /> Advanced analytics and insights</li>
-            </ul>
-            <button className="cta-register-btn" onClick={handleSignUp}>
-              Register Your Hospital Now
-              <ArrowRight size={18} />
-            </button>
-          </div>
-          <div className="cta-right">
-            <div className="stats-card">
-              <div className="stats-item">
-                <div className="stats-value">98%</div>
-                <div className="stats-label">Patient Satisfaction</div>
-              </div>
-              <div className="stats-item">
-                <div className="stats-value">50K+</div>
-                <div className="stats-label">Daily Appointments</div>
-              </div>
-              <div className="stats-item">
-                <div className="stats-value">24/7</div>
-                <div className="stats-label">Support Available</div>
+      {!token && (
+        <section className="hospital-cta-section">
+          <div className="hospital-cta-content">
+            <div className="cta-left">
+              <div className="cta-badge">For Hospitals</div>
+              <h2 className="cta-title">List Your Hospital on Our Platform</h2>
+              <p className="cta-description">
+                Join 1000+ hospitals already using SmarTechHealth to manage appointments, 
+                reach more patients, and streamline operations.
+              </p>
+              <ul className="cta-benefits">
+                <li><CheckCircle size={18} /> Increase patient reach by 200%</li>
+                <li><CheckCircle size={18} /> Free 30-day trial with full features</li>
+                <li><CheckCircle size={18} /> Dedicated account manager support</li>
+                <li><CheckCircle size={18} /> Advanced analytics and insights</li>
+              </ul>
+              <button className="cta-register-btn" onClick={handleSignUp}>
+                Register Your Hospital Now
+                <ArrowRight size={18} />
+              </button>
+            </div>
+            <div className="cta-right">
+              <div className="stats-card">
+                <div className="stats-item">
+                  <div className="stats-value">98%</div>
+                  <div className="stats-label">Patient Satisfaction</div>
+                </div>
+                <div className="stats-item">
+                  <div className="stats-value">50K+</div>
+                  <div className="stats-label">Daily Appointments</div>
+                </div>
+                <div className="stats-item">
+                  <div className="stats-value">24/7</div>
+                  <div className="stats-label">Support Available</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-        )
-      }
+        </section>
+      )}
 
       <section className="testimonials-section">
         <div className="container">

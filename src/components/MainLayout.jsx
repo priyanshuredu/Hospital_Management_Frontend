@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
+import UnifiedSidebar from './UnifiedSidebar';
 import Home from './Home';
 import Hospitals from './Hospitals';
 import StateManagement from './StateManagement';
 import DistrictManagement from './DistrictManagement';
 import CityManagement from './CityManagement';
 import DepartmentsManagement from './DepartmentManagement';
-// import AppointmentsManagement from './components/AppointmentsManagement';
-// import SettingsManagement from './components/SettingsManagement';
 import EditProfile from './EditProfile';
 import ResetPassword from './ResetPassword';
-// import Notifications from './Notifications';
-// import Security from './Security';
 import { useTheme } from './ThemeContext';
 import '../styles/MainLayout.css';
+import AppointmentHistory from './AppointmentHistory';
+import HospitalReport from './HospitalReport';
+import DoctorsReport from './DoctorsReport';
+import LabsReport from './LabsReport';
+import UsersReport from './UsersReport';
 
 const MainLayout = () => {
   const { isDarkMode } = useTheme();
@@ -33,18 +34,24 @@ const MainLayout = () => {
         return <CityManagement />;
       case 'departments':
         return <DepartmentsManagement />;
-      // case 'appointments':
-      //   return <AppointmentsManagement />;
-      // case 'settings':
-      //   return <SettingsManagement />;
+      case 'appointments':
+        return <AppointmentHistory/>;
+      case 'hospital-report':
+        return <HospitalReport/>;
+      case 'doctor-report':
+        return <DoctorsReport/>;
+      case 'lab-report':
+        return <LabsReport/>;
+      case 'user-report':
+        return <UsersReport/>;
       case 'edit-profile':
         return <EditProfile />;
       case 'reset-password':
         return <ResetPassword />;
-      // case 'notifications':
-      //   return <Notifications />;
-      // case 'security':
-      //   return <Security />;
+      case 'notifications':
+        return <div>Notifications Component</div>;
+      case 'security':
+        return <div>Security Component</div>;
       default:
         return <Home />;
     }
@@ -52,7 +59,11 @@ const MainLayout = () => {
 
   return (
     <div className={`main-layout ${isDarkMode ? 'dark' : 'light'}`}>
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <UnifiedSidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        userRole="admin"
+      />
       <main className="main-content">
         {renderContent()}
       </main>

@@ -12,6 +12,11 @@ import NotFound from './components/NotFound';
 import ForgotPassword from './components/ForgotPassword';
 import DoctorLayout from './components/DoctorLayout';
 import LabAssistantLayout from './components/LabAssistantLayout';
+import DoctorDetails from './components/DoctorDetails';
+import TestReportHistory from './components/TestReportHistory';
+import ResetPassword from './components/ResetPassword';
+import EditProfile from './components/EditProfile';
+import AppointmentHistory from './components/AppointmentHistory';
 
 function App() {
   const [role,setRole] = useState(null);
@@ -33,6 +38,11 @@ function App() {
         <Route path='/hospital' element={role === 'hospital-admin' ? <HospitalLayout /> : <NotAuthorized/>}></Route>
         <Route path='/doctor' element={role === 'doctor' ? <DoctorLayout/> : <NotAuthorized/>}></Route>
         <Route path='/lab' element={role === 'lab-assistant' ? <LabAssistantLayout/> : <NotAuthorized/>}></Route>
+        <Route path="/doctor/:id" element={<DoctorDetails />} />
+        <Route path='/my-reports' element={<TestReportHistory/>}></Route>
+        <Route path='/reset-password' element={<ResetPassword/>}></Route>
+        <Route path='/edit-profile' element={<EditProfile/>}></Route>
+        <Route path='/appointment-history' element={<AppointmentHistory/>}></Route>
         <Route path='*' element={<NotFound/>}></Route>
       </Routes>
       </BrowserRouter>

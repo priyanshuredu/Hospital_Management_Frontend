@@ -89,11 +89,12 @@ const LabManagement = () => {
   const fetchLabs = async () => {
     setLoading(true);
     try {
-      const token = sessionStorage.getItem('token');
+      const token = sessionStorage.getItem('Token');
       const response = await axios.get(`${API_URL}/lab/all`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { "Authorization": `Bearer ${token}` }
       });
       
+      // console.log("first",response)
       // Handle different response structures
       let labsArray = [];
       if (response.data && Array.isArray(response.data.labs)) {
@@ -103,7 +104,6 @@ const LabManagement = () => {
       } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
         labsArray = response.data.data;
       }
-      
       setLabs(labsArray);
     } catch (error) {
       console.error('Error fetching labs:', error);

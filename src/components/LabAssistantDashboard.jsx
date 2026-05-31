@@ -40,7 +40,7 @@ const LabAssistantDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const token = sessionStorage.getItem('token');
+      const token = sessionStorage.getItem('Token');
       const response = await axios.get(`${API_URL}/test/recent-test`, {
         headers: { Authorization: `Bearer ${token}` }
       });

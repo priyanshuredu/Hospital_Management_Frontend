@@ -1,39 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, Stethoscope, Activity, TrendingUp, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Users, Stethoscope, Activity, TrendingUp, ChevronRight, DollarSign, User, Mail, Phone, MapPin } from 'lucide-react';
+import axios from 'axios';
 import '../styles/DoctorHome.css';
+
+const API_URL = 'http://localhost:5000';
 
 const DoctorHome = () => {
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [doctorProfile, setDoctorProfile] = useState(null);
   const [stats, setStats] = useState({
     totalPatients: 0,
     todayAppointments: 0,
     completedAppointments: 0,
-    revenue: 0
+    totalRevenue: 0,
+    upcomingAppointments: 0
   });
 
+  const token = sessionStorage.getItem('Token');
+
   useEffect(() => {
-    fetchDoctorData();
+    fetchAllDoctorData();
   }, []);
 
-  const fetchDoctorData = async () => {
+  const fetchAllDoctorData = async () => {
     try {
-      // Simulate API calls
-      const appointmentsData = await fetchAppointments();
-      const statsData = await fetchStats();
+      setLoading(true);
       
-      const now = new Date();
-      const today = appointmentsData.filter(apt => 
-        new Date(apt.date).toDateString() === now.toDateString()
-      );
-      const upcoming = appointmentsData.filter(apt => 
-        new Date(apt.date) > now
-      );
+      // Fetch all data in parallel
+      const [statsRes, todayRes, upcomingRes, profileRes] = await Promise.all([
+        axios.get(`${API_URL}/appointment/doctor/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/appointment/doctor/today`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/appointment/doctor/upcoming?limit=5`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/appointment/doctor/profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
 
-      setTodayAppointments(today);
-      setUpcomingAppointments(upcoming);
-      setStats(statsData);
+      if (statsRes.data.success) {
+        console.log("first",statsRes.data.stats)
+        setStats(statsRes.data.stats);
+      }
+
+      if (todayRes.data.success) {
+        setTodayAppointments(todayRes.data.appointments);
+      }
+
+      if (upcomingRes.data.success) {
+        setUpcomingAppointments(upcomingRes.data.appointments);
+      }
+
+      if (profileRes.data.success) {
+        setDoctorProfile(profileRes.data.doctor);
+        // Update sessionStorage with profile image if available
+        if (profileRes.data.doctor.profile_image) {
+          sessionStorage.setItem('ProfileImage', profileRes.data.doctor.profile_image);
+        }
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching doctor data:', error);
@@ -41,32 +72,10 @@ const DoctorHome = () => {
     }
   };
 
-  const fetchAppointments = async () => {
-    // Mock API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([
-          { id: 1, patientName: "John Doe", time: "09:00 AM", type: "Checkup", status: "confirmed", date: new Date() },
-          { id: 2, patientName: "Jane Smith", time: "10:30 AM", type: "Follow-up", status: "confirmed", date: new Date() },
-          { id: 3, patientName: "Mike Johnson", time: "02:00 PM", type: "Consultation", status: "pending", date: new Date() },
-          { id: 4, patientName: "Sarah Williams", time: "03:30 PM", type: "Emergency", status: "confirmed", date: new Date(Date.now() + 86400000) },
-          { id: 5, patientName: "Robert Brown", time: "11:00 AM", type: "Checkup", status: "confirmed", date: new Date(Date.now() + 172800000) }
-        ]);
-      }, 500);
-    });
-  };
-
-  const fetchStats = async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          totalPatients: 245,
-          todayAppointments: 8,
-          completedAppointments: 1245,
-          revenue: 28450
-        });
-      }, 300);
-    });
+  const formatTime = (timeSlot) => {
+    if (!timeSlot) return 'N/A';
+    // Assuming timeSlot is in format like "09:00-10:00"
+    return timeSlot.split('-')[0];
   };
 
   const getStatusColor = (status) => {
@@ -74,14 +83,24 @@ const DoctorHome = () => {
       case 'confirmed': return 'status-confirmed';
       case 'pending': return 'status-pending';
       case 'cancelled': return 'status-cancelled';
+      case 'completed': return 'status-completed';
       default: return '';
     }
+  };
+
+  const getStatusText = (attended) => {
+    if (attended === true) return 'Completed';
+    if (attended === false) return 'Pending';
+    return 'Scheduled';
   };
 
   if (loading) {
     return (
       <div className="doctor-home-container">
-        <div className="loading-spinner">Loading...</div>
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Loading dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -91,7 +110,7 @@ const DoctorHome = () => {
       {/* Header */}
       <div className="doctor-home-header">
         <div>
-          <h1>Welcome back, Dr. Sarah!</h1>
+          <h1>Welcome back, {doctorProfile?.username || 'Doctor'}!</h1>
           <p>Here's what's happening with your practice today</p>
         </div>
         <div className="current-date">
@@ -99,6 +118,27 @@ const DoctorHome = () => {
           <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
         </div>
       </div>
+
+      {/* Doctor Profile Summary */}
+      {doctorProfile && (
+        <div className="doctor-profile-summary">
+          <div className="profile-avatar">
+            {doctorProfile.profile_image ? (
+              <img className='profile-avatar-img' src={doctorProfile.profile_image} alt={doctorProfile.name} />
+            ) : (
+              <User size={40} />
+            )}
+          </div>
+          <div className="profile-info">
+            <h3>{doctorProfile.name}</h3>
+            <p>{doctorProfile.qualification} • {doctorProfile.experience} years experience</p>
+            <div className="profile-details">
+              <span><Stethoscope size={14} /> {doctorProfile.sub_department?.sub_departmentName || 'General'}</span>
+              <span><DollarSign size={14} /> ${doctorProfile.consultation_fee}/consultation</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="stats-grid">
@@ -109,7 +149,7 @@ const DoctorHome = () => {
           <div className="stat-info">
             <h3>{stats.totalPatients}</h3>
             <p>Total Patients</p>
-            <span className="stat-trend"><TrendingUp size={14} /> +12% this month</span>
+            <span className="stat-trend"><TrendingUp size={14} /> All time</span>
           </div>
         </div>
 
@@ -120,7 +160,7 @@ const DoctorHome = () => {
           <div className="stat-info">
             <h3>{stats.todayAppointments}</h3>
             <p>Today's Appointments</p>
-            <span className="stat-trend">{todayAppointments.filter(a => a.status === 'confirmed').length} confirmed</span>
+            <span className="stat-trend">{todayAppointments.filter(a => a.appointmentAttended).length} completed</span>
           </div>
         </div>
 
@@ -131,18 +171,18 @@ const DoctorHome = () => {
           <div className="stat-info">
             <h3>{stats.completedAppointments}</h3>
             <p>Total Consultations</p>
-            <span className="stat-trend">Lifetime</span>
+            <span className="stat-trend">Completed</span>
           </div>
         </div>
 
         <div className="stat-card">
           <div className="stat-icon revenue">
-            <DollarSignIcon size={24} />
+            <DollarSign size={24} />
           </div>
           <div className="stat-info">
-            <h3>${stats.revenue.toLocaleString()}</h3>
+            <h3>${stats.totalRevenue.toLocaleString()}</h3>
             <p>Total Revenue</p>
-            <span className="stat-trend">This year</span>
+            <span className="stat-trend">From consultations</span>
           </div>
         </div>
       </div>
@@ -162,21 +202,24 @@ const DoctorHome = () => {
         <div className="appointments-list">
           {todayAppointments.length > 0 ? (
             todayAppointments.map(apt => (
-              <div key={apt.id} className="appointment-card">
+              <div key={apt._id} className="appointment-card">
                 <div className="appointment-time">
                   <Clock size={16} />
-                  <span>{apt.time}</span>
+                  <span>{formatTime(apt.timeSlot)}</span>
                 </div>
                 <div className="appointment-info">
                   <h4>{apt.patientName}</h4>
-                  <p>{apt.type}</p>
+                  <p>Age: {apt.patientAge} • {apt.patientGender}</p>
+                  <small>{apt.patientPhone}</small>
                 </div>
                 <div className="appointment-status">
-                  <span className={`status-badge ${getStatusColor(apt.status)}`}>
-                    {apt.status}
+                  <span className={`status-badge ${apt.appointmentAttended ? 'status-completed' : 'status-pending'}`}>
+                    {getStatusText(apt.appointmentAttended)}
                   </span>
                 </div>
-                <button className="action-btn">Start Consultation</button>
+                <button className="action-btn">
+                  {apt.appointmentAttended ? 'View Details' : 'Start Consultation'}
+                </button>
               </div>
             ))
           ) : (
@@ -197,31 +240,29 @@ const DoctorHome = () => {
         </div>
 
         <div className="upcoming-list">
-          {upcomingAppointments.slice(0, 3).map(apt => (
-            <div key={apt.id} className="upcoming-card">
-              <div className="upcoming-date">
-                <span className="date-day">{new Date(apt.date).getDate()}</span>
-                <span className="date-month">{new Date(apt.date).toLocaleString('default', { month: 'short' })}</span>
+          {upcomingAppointments.length > 0 ? (
+            upcomingAppointments.map(apt => (
+              <div key={apt._id} className="upcoming-card">
+                <div className="upcoming-date">
+                  <span className="date-day">{new Date(apt.appointmentDate).getDate()}</span>
+                  <span className="date-month">{new Date(apt.appointmentDate).toLocaleString('default', { month: 'short' })}</span>
+                </div>
+                <div className="upcoming-details">
+                  <h4>{apt.patientName}</h4>
+                  <p>{formatTime(apt.timeSlot)} • Age: {apt.patientAge}</p>
+                </div>
+                <ChevronRight size={20} className="arrow-icon" />
               </div>
-              <div className="upcoming-details">
-                <h4>{apt.patientName}</h4>
-                <p>{apt.type} • {apt.time}</p>
-              </div>
-              <ChevronRight size={20} className="arrow-icon" />
+            ))
+          ) : (
+            <div className="no-appointments">
+              <p>No upcoming appointments</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
   );
 };
-
-// Helper component for DollarSign icon
-const DollarSignIcon = ({ size }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="1" x2="12" y2="23"></line>
-    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-  </svg>
-);
 
 export default DoctorHome;

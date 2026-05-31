@@ -39,23 +39,24 @@ const Login = () => {
       console.log("Response:", response);
       
       const token = response.data.token;
-      const userId = response.data.id;
-      const userName = response.data.username;
-      const role = response.data.role;
-      const email = response.data.email;
-      const host = response.data.host
-      const machine = response.data.machine;
-      const user = response.data.user;
+      // const userId = response.data.id;
+      // const userName = response.data.username;
+      // const role = response.data.role;
+      // const email = response.data.email;
+      // const host = response.data.host
+      // const machine = response.data.machine;
+      const user = response.data.userData;
+      const role = user.role;
 
-      if (userId && token && userName && role) {
+      if (user && token) {
         sessionStorage.setItem('Token', token);
-        sessionStorage.setItem('User Id', userId);
-        sessionStorage.setItem('User Name', userName);
-        sessionStorage.setItem('role', role);
+        sessionStorage.setItem('User Id', user._id);
+        sessionStorage.setItem('User Name', user.userName);
+        sessionStorage.setItem('role', user.role);
         sessionStorage.setItem('user', JSON.stringify(user));
-        sessionStorage.setItem('email', email);
-        sessionStorage.setItem('host', host);
-        sessionStorage.setItem('machine', machine);
+        sessionStorage.setItem('email', user.email);
+        // sessionStorage.setItem('host', host);
+        // sessionStorage.setItem('machine', machine);
         
         setLoading(false);
         

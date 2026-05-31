@@ -1,7 +1,9 @@
+/* eslint-disable no-useless-catch */
 // services/api.js - Updated with booking and doctor/hospital endpoints
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:5000';
+const token = sessionStorage.getItem('Token')
 
 export const apiService = {
   // Hospitals
@@ -72,7 +74,10 @@ export const apiService = {
   // Appointments (new endpoints for booking)
   createAppointment: async (appointmentData) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/appointment/create`, appointmentData);
+      const response = await axios.post(`${API_BASE_URL}/appointment/create`, appointmentData,{
+        headers:{
+          "Authorization":`Bearer ${token}`        }
+      });
       return response.data;
     } catch (error) {
       console.error('Error creating appointment:', error);
@@ -87,7 +92,11 @@ export const apiService = {
 
   getAllAppointments: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/appointment/all`);
+      const response = await axios.get(`${API_BASE_URL}/appointment/by-doctor`,{
+        headers:{
+          "Authorization":`Bearer ${token}`
+        }
+      });
       return response.data;
     } catch (error) {
       console.error('Error fetching appointments:', error);
@@ -128,7 +137,11 @@ export const apiService = {
 
 getAppointmentsByDoctor: async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/appointment/by-doctor`);
+    const response = await axios.get(`${API_BASE_URL}/appointment/by-doctor`,{
+        headers:{
+          "Authorization":`Bearer ${token}`
+        }
+      });
     return response.data;
   } catch (error) {
     throw error;
@@ -136,10 +149,12 @@ getAppointmentsByDoctor: async () => {
 },
 
 // Get appointments by hospital
-getAppointmentsByHospital: async (hospitalId) => {
+getAppointmentsByHospital: async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/appointment/by-hospital`, {
-      params: { hospitalId }
+      headers:{
+        'Authorization':`Bearer ${token}`
+      }
     });
     return response.data;
   } catch (error) {
@@ -150,8 +165,12 @@ getAppointmentsByHospital: async (hospitalId) => {
 // Update appointment attendance
 updateAppointmentAttendance: async (appointmentId, status) => {
   try {
-    const data ={id : appointmentId ,status};
-    const response = await axios.patch(`${API_BASE_URL}/appointment/update-attendance`, data);
+    const data ={id : appointmentId ,status : status};
+    const response = await axios.patch(`${API_BASE_URL}/appointment/update-attendance`, data ,{
+      headers:{
+        "Authorization":`Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -170,7 +189,11 @@ getLabTestsByHospital: async (hospitalId) => {
 // Add prescription
 createPrescription: async (prescriptionData) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/prescription/create`, prescriptionData);
+    const response = await axios.post(`${API_BASE_URL}/prescription/create`, prescriptionData ,{
+      headers:{
+        'Authorization':`Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {
     throw error;

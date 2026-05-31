@@ -33,10 +33,6 @@ const HospitalAppointments = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Get hospital ID from localStorage or auth context
-  const hospitalId = JSON.parse(localStorage.getItem('user'))?.hospital?._id || 
-                     JSON.parse(localStorage.getItem('user'))?.hospitalId || '';
-
   useEffect(() => {
     fetchAppointments();
   }, []);
@@ -48,9 +44,10 @@ const HospitalAppointments = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const response = await apiService.getAppointmentsByHospital(hospitalId);
+      const response = await apiService.getAppointmentsByHospital();
       let appointmentsData = response;
-      if (response?.data) appointmentsData = response.data;
+      console.log("res",response)
+      // if (response?.) appointmentsData = response.data;
       if (response?.appointments) appointmentsData = response.appointments;
       
       setAppointments(Array.isArray(appointmentsData) ? appointmentsData : []);

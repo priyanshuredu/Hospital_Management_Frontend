@@ -384,7 +384,7 @@ const Hospitals = () => {
                           className="status-update-select"
                           value={hospital.status}
                           onChange={(e) => handleStatusChange(hospital._id, e.target.value)}
-                          disabled={updatingStatus}
+                          disabled={updatingStatus || hospital.status === "approved" || hospital.status === "rejected"}
                         >
                           <option value="pending">Pending</option>
                           <option value="approved">Approved</option>

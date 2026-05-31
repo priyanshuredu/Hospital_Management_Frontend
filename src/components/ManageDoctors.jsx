@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   Search,
@@ -22,13 +23,17 @@ import {
   User,
   GraduationCap,
   Briefcase,
-  Plus
+  Plus,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import '../styles/ManageDoctors.css';
 
 const API_URL = 'http://localhost:5000';
 
 const ManageDoctors = () => {
+  const navigate = useNavigate();
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,27 +48,97 @@ const ManageDoctors = () => {
   const [subDepartments, setSubDepartments] = useState([]);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [updateError, setUpdateError] = useState('');
+  
+  // New state for sorting and filtering
+  const [sortConfig, setSortConfig] = useState({ key: 'doctor_name', direction: 'asc' });
+  const [filterSpecialization, setFilterSpecialization] = useState('');
+  const [filterExperience, setFilterExperience] = useState('');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [availableSpecializations, setAvailableSpecializations] = useState([]);
 
   useEffect(() => {
     fetchDoctors();
     fetchSubDepartments();
   }, []);
 
+  // Update filtering, searching, and sorting whenever dependencies change
   useEffect(() => {
-    const results = doctors.filter(doctor =>
-      doctor.doctor_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.phone?.includes(searchTerm)
-    );
+    let results = [...doctors];
+    
+    // Apply search
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      results = results.filter(doctor =>
+        (doctor.doctor_name?.toLowerCase().includes(searchLower) ||
+        doctor.email?.toLowerCase().includes(searchLower) ||
+        doctor.qualification?.toLowerCase().includes(searchLower)) ||
+        doctor.sub_department?.sub_departmentName?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Apply specialization filter
+    if (filterSpecialization) {
+      results = results.filter(doctor =>
+        doctor.sub_department?.sub_departmentName === filterSpecialization ||
+        doctor.sub_department?.name === filterSpecialization
+      );
+    }
+    
+    // Apply experience filter
+    if (filterExperience) {
+      if (filterExperience === '0-5') {
+        results = results.filter(doctor => doctor.experience < 5);
+      } else if (filterExperience === '5-10') {
+        results = results.filter(doctor => doctor.experience >= 5 && doctor.experience < 10);
+      } else if (filterExperience === '10+') {
+        results = results.filter(doctor => doctor.experience >= 10);
+      }
+    }
+    
+    // Apply sorting
+    results.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      
+      // Handle nested properties
+      if (sortConfig.key === 'specialization') {
+        aValue = a.sub_department?.sub_departmentName || a.sub_department?.name || '';
+        bValue = b.sub_department?.sub_departmentName || b.sub_department?.name || '';
+      }
+      
+      // Handle numeric values
+      if (sortConfig.key === 'experience' || sortConfig.key === 'consultation_fee') {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      } else {
+        aValue = String(aValue || '').toLowerCase();
+        bValue = String(bValue || '').toLowerCase();
+      }
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
     setFilteredDoctors(results);
     setCurrentPage(1);
-  }, [searchTerm, doctors]);
+  }, [searchTerm, doctors, sortConfig, filterSpecialization, filterExperience]);
+
+  // Extract unique specializations for filter dropdown
+  useEffect(() => {
+    if (doctors.length > 0) {
+      const specializations = [...new Set(doctors.map(doctor => 
+        doctor.sub_department?.sub_departmentName || doctor.sub_department?.name || 'General'
+      ))];
+      setAvailableSpecializations(specializations);
+    }
+  }, [doctors]);
 
   const fetchDoctors = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/doctor/all`);
-      console.log("first",response)
+      console.log("first", response);
       let doctorsArray = [];
       if (response.data && response.data.success && Array.isArray(response.data.doctors)) {
         doctorsArray = response.data.doctors;
@@ -100,9 +175,25 @@ const ManageDoctors = () => {
     }
   };
 
+  // Sorting handler
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setFilterSpecialization('');
+    setFilterExperience('');
+    setSortConfig({ key: 'doctor_name', direction: 'asc' });
+  };
+
+  // Updated handleViewDoctor to navigate to details page
   const handleViewDoctor = (doctor) => {
-    setSelectedDoctor(doctor);
-    setIsViewModalOpen(true);
+    navigate(`/doctor/${doctor._id}`);
   };
 
   const handleEditDoctor = (doctor) => {
@@ -169,9 +260,10 @@ const ManageDoctors = () => {
   const currentItems = filteredDoctors.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredDoctors.length / itemsPerPage);
 
-  const formatDate = (date) => {
-    if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString();
+  // Get sort icon
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return <ArrowUpDown size={14} />;
+    return sortConfig.direction === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
   };
 
   return (
@@ -186,22 +278,91 @@ const ManageDoctors = () => {
             <Search size={18} />
             <input
               type="text"
-              placeholder="Search by name, email, or phone..."
+              placeholder="Search by name, email, phone, or qualification..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="clear-search">
+                <X size={14} />
+              </button>
+            )}
           </div>
-          <button className="filter-btn">
+          <button className="filter-btn" onClick={() => setIsFilterModalOpen(true)}>
             <Filter size={18} />
             Filter
+            {(filterSpecialization || filterExperience) && <span className="filter-badge">•</span>}
           </button>
+          {(filterSpecialization || filterExperience || searchTerm) && (
+            <button className="reset-btn" onClick={resetFilters}>
+              Reset All
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Active Filters Display */}
+      {(filterSpecialization || filterExperience) && (
+        <div className="active-filters">
+          <span>Active Filters:</span>
+          {filterSpecialization && (
+            <div className="filter-tag">
+              Specialization: {filterSpecialization}
+              <button onClick={() => setFilterSpecialization('')}>×</button>
+            </div>
+          )}
+          {filterExperience && (
+            <div className="filter-tag">
+              Experience: {filterExperience === '0-5' ? '0-5 years' : filterExperience === '5-10' ? '5-10 years' : '10+ years'}
+              <button onClick={() => setFilterExperience('')}>×</button>
+            </div>
+          )}
+        </div>
+      )}
 
       {updateSuccess && (
         <div className="alert success">
           <CheckCircle size={18} />
           <span>Doctor updated successfully!</span>
+        </div>
+      )}
+
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsFilterModalOpen(false)}>
+          <div className="modal-content filter-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Filter Doctors</h2>
+              <button onClick={() => setIsFilterModalOpen(false)} className="close-btn"><X size={20} /></button>
+            </div>
+            <div className="modal-body">
+              <div className="filter-group">
+                <label>Specialization</label>
+                <select value={filterSpecialization} onChange={(e) => setFilterSpecialization(e.target.value)}>
+                  <option value="">All Specializations</option>
+                  {availableSpecializations.map(spec => (
+                    <option key={spec} value={spec}>{spec}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="filter-group">
+                <label>Experience (Years)</label>
+                <select value={filterExperience} onChange={(e) => setFilterExperience(e.target.value)}>
+                  <option value="">All</option>
+                  <option value="0-5">Less than 5 years</option>
+                  <option value="5-10">5 - 10 years</option>
+                  <option value="10+">10+ years</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => {
+                resetFilters();
+                setIsFilterModalOpen(false);
+              }} className="btn-secondary">Reset All</button>
+              <button onClick={() => setIsFilterModalOpen(false)} className="btn-primary">Apply</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -216,12 +377,22 @@ const ManageDoctors = () => {
             <table className="doctors-table">
               <thead>
                 <tr>
-                  <th>Doctor Name</th>
-                  <th>Specialization</th>
-                  <th>Email</th>
+                  <th onClick={() => handleSort('doctor_name')} className="sortable-header">
+                    Doctor Name {getSortIcon('doctor_name')}
+                  </th>
+                  <th onClick={() => handleSort('specialization')} className="sortable-header">
+                    Specialization {getSortIcon('specialization')}
+                  </th>
+                  <th onClick={() => handleSort('email')} className="sortable-header">
+                    Email {getSortIcon('email')}
+                  </th>
                   <th>Phone</th>
-                  <th>Experience</th>
-                  <th>Consultation Fee</th>
+                  <th onClick={() => handleSort('experience')} className="sortable-header">
+                    Experience {getSortIcon('experience')}
+                  </th>
+                  <th onClick={() => handleSort('consultation_fee')} className="sortable-header">
+                    Fee {getSortIcon('consultation_fee')}
+                  </th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -239,12 +410,12 @@ const ManageDoctors = () => {
                         </div>
                       </div>
                     </td>
-                    <td>{doctor.sub_department?.sub_departmentName || doctor.sub_department?.name || 'N/A'}</td>
-                    <td><Mail size={14} /> {doctor.email}</td>
-                    <td><Phone size={14} /> {doctor.phone}</td>
-                    <td> {doctor.experience} years</td>
-                    <td><DollarSign size={14} /> {doctor.consultation_fee}</td>
-                    <td>
+                     <td>{doctor.sub_department?.sub_departmentName || doctor.sub_department?.name || 'N/A'}</td>
+                     <td><Mail size={14} /> {doctor.email}</td>
+                     <td><Phone size={14} /> {doctor.phone}</td>
+                     <td>{doctor.experience} years</td>
+                     <td><DollarSign size={14} /> {doctor.consultation_fee}</td>
+                     <td>
                       <div className="action-buttons">
                         <button onClick={() => handleViewDoctor(doctor)} className="action-btn view">
                           <Eye size={16} />
@@ -265,7 +436,8 @@ const ManageDoctors = () => {
             {filteredDoctors.length === 0 && (
               <div className="no-results">
                 <Stethoscope size={48} />
-                <p>No doctors found</p>
+                <p>No doctors found matching your criteria</p>
+                <button onClick={resetFilters} className="btn-secondary">Clear Filters</button>
               </div>
             )}
 
@@ -277,7 +449,7 @@ const ManageDoctors = () => {
                 >
                   <ChevronLeft size={18} />
                 </button>
-                <span>Page {currentPage} of {totalPages}</span>
+                <span>Page {currentPage} of {totalPages} ({filteredDoctors.length} doctors)</span>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
@@ -289,40 +461,6 @@ const ManageDoctors = () => {
           </>
         )}
       </div>
-
-      {/* View Modal */}
-      {isViewModalOpen && selectedDoctor && (
-        <div className="modal-overlay" onClick={() => setIsViewModalOpen(false)}>
-          <div className="modal-content view-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Doctor Details</h2>
-              <button onClick={() => setIsViewModalOpen(false)} className="close-btn"><X size={20} /></button>
-            </div>
-            <div className="modal-body">
-              <div className="doctor-profile-header">
-                <div className="profile-avatar large">
-                  <Stethoscope size={48} />
-                </div>
-                <div className="profile-info">
-                  <h3>{selectedDoctor.doctor_name}</h3>
-                  <p>{selectedDoctor.qualification}, {selectedDoctor.degree}</p>
-                  <span className="badge">{selectedDoctor.sub_department?.sub_departmentName || 'General'}</span>
-                </div>
-              </div>
-              <div className="details-grid">
-                <div className="detail-item"><label>Email:</label><span>{selectedDoctor.email}</span></div>
-                <div className="detail-item"><label>Phone:</label><span>{selectedDoctor.phone}</span></div>
-                <div className="detail-item"><label>Gender:</label><span>{selectedDoctor.gender}</span></div>
-                <div className="detail-item"><label>Age:</label><span>{selectedDoctor.age}</span></div>
-                <div className="detail-item"><label>Institution:</label><span>{selectedDoctor.institution}</span></div>
-                <div className="detail-item"><label>Year of Completion:</label><span>{selectedDoctor.yearOfCompletion}</span></div>
-                <div className="detail-item"><label>Experience:</label><span>{selectedDoctor.experience} years</span></div>
-                <div className="detail-item"><label>Consultation Fee:</label><span>${selectedDoctor.consultation_fee}</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Edit Modal */}
       {isEditModalOpen && selectedDoctor && (

@@ -116,8 +116,8 @@ const DepartmentManagement = () => {
         id: department._id,
         status: newStatus
       });
-      
-      if (response.data) {
+      console.log("resp :",response)
+      if (response.data.success === true) {
         setDepartments(departments.map(d => 
           d._id === department._id ? { ...d, status: newStatus } : d
         ));

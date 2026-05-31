@@ -1,29 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from './ThemeContext';
-import { User, Mail, Phone, MapPin, Save, Camera, X } from 'lucide-react';
+import { User, Mail, Save, Camera, X, CheckCircle, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import '../styles/EditProfile.css';
+
+const API_URL = 'http://localhost:5000';
 
 const EditProfile = () => {
   const { isDarkMode } = useTheme();
   
-  // Get user data from sessionStorage
-  const userId = sessionStorage.getItem('User Id');
+  // Get token from sessionStorage
   const token = sessionStorage.getItem('Token');
-  const storedUsername = sessionStorage.getItem('User Name');
-  const storedEmail = sessionStorage.getItem('email');
-
+  
   const [formData, setFormData] = useState({
-    username: storedUsername || 'John Doe',
-    email: storedEmail || 'john.doe@example.com',
-    phone: '+1 234 567 8900',
-    location: 'New York, USA',
-    bio: 'Hospital Administrator with 10+ years of experience'
+    username: '',
+    email: ''
   });
   
-  const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [fetchError, setFetchError] = useState('');
   
   // State for profile image modal
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -31,7 +30,54 @@ const EditProfile = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState('');
-  const [currentProfileImage, setCurrentProfileImage] = useState(sessionStorage.getItem('ProfileImage') || null);
+  const [currentProfileImage, setCurrentProfileImage] = useState(null);
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      setFetchError('');
+      
+      const response = await axios.get(`${API_URL}/user/get-user`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
+      console.log("User data response:", response.data);
+      
+      if (response.data) {
+        const user = response.data.response || response.data;
+        setUserData(user);
+        
+        // Set profile image
+        if (user.profile_image) {
+          setCurrentProfileImage(user.profile_image);
+          sessionStorage.setItem('ProfileImage', user.profile_image);
+        }
+        
+        // Populate form data with user info
+        setFormData({
+          username: user.username || '',
+          email: user.email || ''
+        });
+        
+        // Update sessionStorage
+        sessionStorage.setItem('User Name', user.username);
+        sessionStorage.setItem('email', user.email);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setFetchError(error.response?.data?.message || 'Failed to fetch user data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -45,20 +91,20 @@ const EditProfile = () => {
   // Handle profile data update
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setUpdating(true);
     setError('');
     setSuccess('');
 
     try {
+      // Update user profile
+      const userUpdateData = {
+        username: formData.username,
+        email: formData.email
+      };
+      
       const response = await axios.put(
-        `http://localhost:5000/user/profile-update`,
-        {
-          username: formData.username,
-          email: formData.email,
-          phone: formData.phone,
-          location: formData.location,
-          bio: formData.bio
-        },
+        `${API_URL}/user/profile-update`,
+        userUpdateData,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -72,7 +118,10 @@ const EditProfile = () => {
         sessionStorage.setItem('User Name', formData.username);
         sessionStorage.setItem('email', formData.email);
         
-        setSuccess('Profile updated successfully!');
+        setSuccess('Username updated successfully!');
+        
+        // Refresh user data
+        fetchUserData();
         
         setTimeout(() => {
           setSuccess('');
@@ -84,7 +133,7 @@ const EditProfile = () => {
       console.error("Update profile error:", error);
       setError(error.response?.data?.message || 'Failed to update profile. Please try again.');
     } finally {
-      setLoading(false);
+      setUpdating(false);
     }
   };
 
@@ -128,18 +177,20 @@ const EditProfile = () => {
     setImageError('');
     
     try {
-      const formData = new FormData();
-      formData.append('image', selectedImage);
+      const formDataImage = new FormData();
+      formDataImage.append('image', selectedImage);
       
       const response = await axios.patch(
-        `http://localhost:5000/user/update-profile-img`,
-        formData,
+        `${API_URL}/user/update-profile-img`,
+        formDataImage,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
           }
         }
       );
+      
+      console.log("Image upload response:", response);
       
       if (response.data.message === "Profile image updated successfully.") {
         setSuccess('Profile image updated successfully!');
@@ -153,6 +204,9 @@ const EditProfile = () => {
         setIsImageModalOpen(false);
         setSelectedImage(null);
         setImagePreview(null);
+        
+        // Refresh user data to get updated profile image URL
+        fetchUserData();
         
         setTimeout(() => {
           setSuccess('');
@@ -182,7 +236,7 @@ const EditProfile = () => {
     
     try {
       const response = await axios.delete(
-        `http://localhost:8080/user/remove-profile-image`,
+        `${API_URL}/user/remove-profile-image`,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -195,6 +249,8 @@ const EditProfile = () => {
         sessionStorage.removeItem('ProfileImage');
         setSuccess('Profile image removed successfully!');
         setIsImageModalOpen(false);
+        
+        fetchUserData();
         
         setTimeout(() => {
           setSuccess('');
@@ -210,22 +266,47 @@ const EditProfile = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className={`edit-profile-container ${isDarkMode ? 'dark' : 'light'}`}>
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Loading profile data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className={`edit-profile-container ${isDarkMode ? 'dark' : 'light'}`}>
+        <div className="error-message">
+          <AlertCircle size={20} />
+          <span>{fetchError}</span>
+        </div>
+        <button onClick={fetchUserData} className="retry-btn">Retry</button>
+      </div>
+    );
+  }
+
   return (
     <div className={`edit-profile-container ${isDarkMode ? 'dark' : 'light'}`}>
       <div className="profile-header">
         <h1>Edit Profile</h1>
-        <p>Update your personal information</p>
+        <p>Update your profile information</p>
       </div>
 
       {error && (
         <div className="error-message">
-          <span>⚠️</span> {error}
+          <AlertCircle size={20} />
+          <span>{error}</span>
         </div>
       )}
 
       {success && (
         <div className="success-message">
-          <span>✓</span> {success}
+          <CheckCircle size={20} />
+          <span>{success}</span>
         </div>
       )}
 
@@ -251,81 +332,60 @@ const EditProfile = () => {
               Change Photo
             </button>
           </div>
+          
+          {/* Account Status Badge */}
+          {userData && (
+            <div className="account-status">
+              <span className={`status-badge ${userData.accountStatus}`}>
+                {userData.accountStatus === 'active' ? '✓ Active Account' : '⚠️ Inactive Account'}
+              </span>
+              <span className={`online-status ${userData.currentStatus}`}>
+                {userData.currentStatus === 'online' ? '🟢 Online' : '⚫ Offline'}
+              </span>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="profile-form">
-          <div className="form-group">
-            <label>
-              <User size={18} />
-              Username
-            </label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
+          <div className="form-section">
+            <h3>Account Information</h3>
+            
+            <div className="form-group">
+              <label>
+                <User size={18} />
+                Username
+              </label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                disabled={updating}
+                placeholder="Enter your username"
+              />
+              <small className="field-note">You can change your username</small>
+            </div>
+
+            <div className="form-group">
+              <label>
+                <Mail size={18} />
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                disabled={true}
+                className="readonly-field"
+              />
+              <small className="field-note">Email cannot be changed</small>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label>
-              <Mail size={18} />
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>
-              <Phone size={18} />
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>
-              <MapPin size={18} />
-              Location
-            </label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Bio</label>
-            <textarea
-              name="bio"
-              rows="4"
-              value={formData.bio}
-              onChange={handleChange}
-              disabled={loading}
-            />
-          </div>
-
-          <button type="submit" className="save-btn" disabled={loading}>
+          <button type="submit" className="save-btn" disabled={updating}>
             <Save size={18} />
-            {loading ? 'Saving...' : 'Save Changes'}
+            {updating ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       </div>
@@ -384,7 +444,8 @@ const EditProfile = () => {
               
               {imageError && (
                 <div className="modal-error">
-                  <span>⚠️</span> {imageError}
+                  <AlertCircle size={16} />
+                  <span>{imageError}</span>
                 </div>
               )}
             </div>
