@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/TestReportHistory.css';
 import axios from 'axios';
+import { ChevronLeft } from 'lucide-react';
 
 const TestReportHistory = () => {
   const [testReports, setTestReports] = useState([]);
@@ -18,7 +19,7 @@ const TestReportHistory = () => {
     try {
       setLoading(true);
       const storedToken = sessionStorage.getItem('Token');
-      const response = await axios.get('http://localhost:5000/test-report/user-test-report-history',{
+      const response = await axios.get('http://localhost:5000/test-report/test-report-history',{
         headers: { Authorization: `Bearer ${storedToken}` }
       }); // Update with your API endpoint
       
@@ -107,7 +108,7 @@ const TestReportHistory = () => {
 
   return (
     <div className="test-report-history">
-      <button className='filter-btn' onClick={() => navigate(-1)}>Back</button>
+      <button className='filter-btn' onClick={() => navigate(-1)}><ChevronLeft size={18}/>Back</button>
       <div className="header">
         <h1>📋 Test Reports History</h1>
         <p>View and manage all your medical test reports</p>

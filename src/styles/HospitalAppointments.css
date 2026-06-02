@@ -158,3 +158,302 @@
   align-items: center;
   gap: 4px;
 }
+
+/* Add to Hospitals.css, LabManagement.css, HospitalAppointments.css, etc. */
+
+/* Header Right Section */
+.header-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Search Box Styles */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 8px;
+  min-width: 300px;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+.clear-search {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+/* Filter Button */
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.filter-btn:hover {
+  background: var(--hover-bg, #f1f3f5);
+}
+
+.filter-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+  color: white;
+  font-size: 10px;
+}
+
+/* Reset Button */
+.reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+  background: #ef4444;
+  color: white;
+}
+
+/* Active Filters Display */
+.active-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e9ecef);
+}
+
+.active-filters span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary, #6c757d);
+}
+
+.filter-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  background: #3b82f620;
+  color: #3b82f6;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.filter-tag button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #3b82f6;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.filter-tag button:hover {
+  color: #ef4444;
+}
+
+/* Sortable Header */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.sortable-header:hover {
+  background: var(--hover-bg, #f8f9fa);
+}
+
+.sortable-header svg {
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Filter Modal */
+.filter-modal {
+  max-width: 450px;
+}
+
+.filter-modal .filter-group {
+  margin-bottom: 20px;
+}
+
+.filter-modal .filter-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-primary, #2c3e50);
+}
+
+.filter-modal .filter-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color, #e9ecef);
+  border-radius: 8px;
+  background: var(--card-bg, #ffffff);
+}
+
+/* Sort Buttons */
+.sort-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color, #e9ecef);
+  background: var(--card-bg, #ffffff);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+  background: var(--hover-bg, #f1f3f5);
+  border-color: #3b82f6;
+}
+
+/* Table Cell with Avatar */
+.hospital-cell,
+.doctor-cell,
+.lab-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hospital-avatar-small,
+.doctor-avatar-small,
+.lab-avatar-small {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* No Data State */
+.no-data {
+  text-align: center;
+  padding: 48px !important;
+}
+
+.no-data svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.clear-filters-btn {
+  margin-top: 12px;
+  padding: 8px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* View Toggle Container */
+.view-toggle-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid var(--border-color, #e9ecef);
+}
+
+.toggle-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.toggle-btn.active {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-right {
+    flex-wrap: wrap;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .active-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .sort-buttons {
+    flex-direction: column;
+  }
+  
+  .sort-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

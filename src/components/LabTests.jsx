@@ -197,7 +197,7 @@ const LabTests = ({ activeTab }) => {
     }
 
     try {
-      const token = sessionStorage.getItem('token');
+      const token = sessionStorage.getItem('Token');
       await axios.patch(`${API_URL}/test-report/update-status`, 
         { id: testId, status },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -209,42 +209,45 @@ const LabTests = ({ activeTab }) => {
     }
   };
 
-  const handleSubmitResult = async () => {
-    if (!testResult.trim() && !reportFile) {
+  const handleSubmitResult = async (id) => {
+    if (!reportFile) {
       alert('Please enter test results or upload a report');
       return;
     }
     
     setSubmitting(true);
     try {
-      const token = sessionStorage.getItem('token');
+      const token = sessionStorage.getItem('Token');
       const formData = new FormData();
-      formData.append('result', testResult);
       if (reportFile) {
+        formData.append('id', id)
         formData.append('report', reportFile);
       }
+      console.log("Form :",formData)
       
-      await axios.post(`${API_URL}/lab-assistant/test/${selectedTest._id}/result`,
+      const response = await axios.post(`${API_URL}/test-report/add-report`,
         formData,
         { 
           headers: { 
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           } 
         }
       );
       
       // Also update status to completed
-      await axios.patch(`${API_URL}/test-report/update-status`,
-        { id: selectedTest._id, status: 'completed' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // await axios.patch(`${API_URL}/test-report/update-status`,
+      //   { id: selectedTest._id, status: 'completed' },
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
       
+      if(response.message === "Report added."){
+        alert('Report added successfully!');
+      }
       setShowModal(false);
       setTestResult('');
       setReportFile(null);
       fetchTests();
-      alert('Report added successfully!');
     } catch (error) {
       console.error('Error submitting results:', error);
       alert('Failed to submit report');
@@ -538,30 +541,20 @@ const LabTests = ({ activeTab }) => {
               </div>
               
               <div className="form-group">
-                <label>Test Results *</label>
-                <textarea
-                  rows={6}
-                  value={testResult}
-                  onChange={(e) => setTestResult(e.target.value)}
-                  placeholder="Enter detailed test results here..."
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Upload Report (PDF/Image)</label>
+                <label>Upload Report </label>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png"
                   onChange={(e) => setReportFile(e.target.files[0])}
                 />
-                <small>Upload PDF or image file of the test report</small>
+                <small>Upload image file of the test report</small>
               </div>
             </div>
             <div className="modal-footer">
               <button className="btn-secondary" onClick={() => setShowModal(false)}>
                 Cancel
               </button>
-              <button className="btn-primary" onClick={handleSubmitResult} disabled={submitting}>
+              <button className="btn-primary" onClick={() =>handleSubmitResult(selectedTest._id)} disabled={submitting}>
                 {submitting ? <Loader size={18} className="spinner" /> : <Save size={18} />}
                 {submitting ? 'Submitting...' : 'Submit Report'}
               </button>

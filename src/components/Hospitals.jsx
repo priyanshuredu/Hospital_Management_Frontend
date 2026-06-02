@@ -17,7 +17,11 @@ import {
   RefreshCw,
   AlertCircle,
   X,
-  Info
+  Info,
+  Filter,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 import '../styles/Hospitals.css';
@@ -29,14 +33,18 @@ const Hospitals = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterType, setFilterType] = useState('all');
   const [selectedHospital, setSelectedHospital] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'grid'
+  const [viewMode, setViewMode] = useState('table');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: 'hospital_name', direction: 'asc' });
+  
   const itemsPerPage = 10;
+  const availableTypes = ['govt.', 'private', 'trust', 'corporate'];
 
   // Fetch all hospitals
   const fetchHospitals = async () => {
@@ -58,30 +66,88 @@ const Hospitals = () => {
     fetchHospitals();
   }, []);
 
-  // Filter hospitals
+  // Filter, search, and sort hospitals
   useEffect(() => {
-    let filtered = hospitals;
+    let results = [...hospitals];
     
-    if (searchTerm) {
-      filtered = filtered.filter(hospital => 
-        hospital.hospital_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hospital.registration_no?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hospital.hospital_manager?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hospital.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    // Apply search
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      results = results.filter(hospital =>
+        hospital.hospital_name?.toLowerCase().includes(searchLower) ||
+        hospital.registration_no?.toLowerCase().includes(searchLower) ||
+        hospital.hospital_manager?.toLowerCase().includes(searchLower) ||
+        hospital.email?.toLowerCase().includes(searchLower) ||
+        hospital.city?.cityName?.toLowerCase().includes(searchLower)
       );
     }
     
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(hospital => hospital.status === statusFilter);
+    // Apply status filter
+    if (filterStatus !== 'all') {
+      results = results.filter(hospital => hospital.status === filterStatus);
     }
     
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(hospital => hospital.hospital_type === typeFilter);
+    // Apply type filter
+    if (filterType !== 'all') {
+      results = results.filter(hospital => hospital.hospital_type === filterType);
     }
     
-    setFilteredHospitals(filtered);
+    // Apply sorting
+    results.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      
+      // Handle nested properties
+      if (sortConfig.key === 'city') {
+        aValue = a.city?.cityName || '';
+        bValue = b.city?.cityName || '';
+      } else if (sortConfig.key === 'doctors') {
+        aValue = a.total_doctors || 0;
+        bValue = b.total_doctors || 0;
+      } else if (sortConfig.key === 'beds') {
+        aValue = a.total_beds || 0;
+        bValue = b.total_beds || 0;
+      }
+      
+      // Handle numeric values
+      if (sortConfig.key === 'total_doctors' || sortConfig.key === 'total_beds') {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      } else {
+        aValue = String(aValue || '').toLowerCase();
+        bValue = String(bValue || '').toLowerCase();
+      }
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    setFilteredHospitals(results);
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, typeFilter, hospitals]);
+  }, [searchTerm, hospitals, sortConfig, filterStatus, filterType]);
+
+  // Sorting handler
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setFilterStatus('all');
+    setFilterType('all');
+    setSortConfig({ key: 'hospital_name', direction: 'asc' });
+  };
+
+  // Get sort icon
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return <ArrowUpDown size={14} />;
+    return sortConfig.direction === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
+  };
 
   // Fetch single hospital details
   const fetchHospitalDetails = async (id) => {
@@ -191,11 +257,52 @@ const Hospitals = () => {
           <h1>Hospitals Management</h1>
           <p>View and manage hospital status</p>
         </div>
-        <button className="refresh-btn" onClick={fetchHospitals}>
-          <RefreshCw size={18} />
-          Refresh
-        </button>
+        <div className="header-right">
+          <div className="search-box">
+            <Search size={18} />
+            <input
+              type="text"
+              placeholder="Search by hospital name, registration no, manager, or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="clear-search">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          <button className="filter-btn" onClick={() => setIsFilterModalOpen(true)}>
+            <Filter size={18} />
+            Filter
+            {(filterStatus !== 'all' || filterType !== 'all') && <span className="filter-badge">•</span>}
+          </button>
+          {(filterStatus !== 'all' || filterType !== 'all' || searchTerm) && (
+            <button className="reset-btn" onClick={resetFilters}>
+              Reset All
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Active Filters Display */}
+      {(filterStatus !== 'all' || filterType !== 'all') && (
+        <div className="active-filters">
+          <span>Active Filters:</span>
+          {filterStatus !== 'all' && (
+            <div className="filter-tag">
+              Status: {filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
+              <button onClick={() => setFilterStatus('all')}>×</button>
+            </div>
+          )}
+          {filterType !== 'all' && (
+            <div className="filter-tag">
+              Type: {filterType === 'govt.' ? 'Government' : filterType === 'private' ? 'Private' : filterType === 'trust' ? 'Trust' : 'Corporate'}
+              <button onClick={() => setFilterType('all')}>×</button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Statistics Cards */}
       <div className="stats-grid">
@@ -260,56 +367,70 @@ const Hospitals = () => {
         </div>
       </div>
 
-      {/* Filters and Actions */}
-      <div className="filters-section">
-        <div className="search-box">
-          <Search size={20} />
-          <input
-            type="text"
-            placeholder="Search by hospital name, registration no, manager, or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        
-        <div className="filter-group">
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="all">All Status</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-            <option value="rejected">Rejected</option>
-          </select>
-          
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-            <option value="all">All Types</option>
-            <option value="govt.">Government</option>
-            <option value="private">Private</option>
-            <option value="trust">Trust</option>
-            <option value="corporate">Corporate</option>
-          </select>
-
-          <div className="view-toggle">
-            <button 
-              className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
-              onClick={() => setViewMode('table')}
-            >
-              📋 Table
-            </button>
-            <button 
-              className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-            >
-              🖼️ Grid
-            </button>
-          </div>
+      {/* View Toggle */}
+      <div className="view-toggle-container">
+        <div className="view-toggle">
+          <button 
+            className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
+            onClick={() => setViewMode('table')}
+          >
+            📋 Table View
+          </button>
+          <button 
+            className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            onClick={() => setViewMode('grid')}
+          >
+            🖼️ Grid View
+          </button>
         </div>
       </div>
+
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsFilterModalOpen(false)}>
+          <div className="modal-content filter-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Filter Hospitals</h2>
+              <button onClick={() => setIsFilterModalOpen(false)} className="close-btn"><X size={20} /></button>
+            </div>
+            <div className="modal-body">
+              <div className="filter-group">
+                <label>Status</label>
+                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                  <option value="all">All Status</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              <div className="filter-group">
+                <label>Hospital Type</label>
+                <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+                  <option value="all">All Types</option>
+                  <option value="govt.">Government</option>
+                  <option value="private">Private</option>
+                  <option value="trust">Trust</option>
+                  <option value="corporate">Corporate</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => {
+                resetFilters();
+                setIsFilterModalOpen(false);
+              }} className="btn-secondary">Reset All</button>
+              <button onClick={() => setIsFilterModalOpen(false)} className="btn-primary">Apply</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error Display */}
       {error && (
         <div className="error-message">
           <AlertCircle size={20} />
           <span>{error}</span>
+          <button onClick={fetchHospitals} className="retry-btn">Retry</button>
         </div>
       )}
 
@@ -319,13 +440,23 @@ const Hospitals = () => {
           <table className="hospitals-table">
             <thead>
               <tr>
-                <th>Hospital Name</th>
+                <th onClick={() => handleSort('hospital_name')} className="sortable-header">
+                  Hospital Name {getSortIcon('hospital_name')}
+                </th>
                 <th>Registration No</th>
-                <th>Type</th>
-                <th>Location</th>
+                <th onClick={() => handleSort('hospital_type')} className="sortable-header">
+                  Type {getSortIcon('hospital_type')}
+                </th>
+                <th onClick={() => handleSort('city')} className="sortable-header">
+                  Location {getSortIcon('city')}
+                </th>
                 <th>Contact</th>
-                <th>Doctors/Beds</th>
-                <th>Status</th>
+                <th onClick={() => handleSort('doctors')} className="sortable-header">
+                  Doctors/Beds {getSortIcon('doctors')}
+                </th>
+                <th onClick={() => handleSort('status')} className="sortable-header">
+                  Status {getSortIcon('status')}
+                </th>
                 <th>Update Status</th>
                 <th>Actions</th>
               </tr>
@@ -340,9 +471,14 @@ const Hospitals = () => {
                   return (
                     <tr key={hospital._id}>
                       <td className="hospital-name-cell">
-                        <div>
-                          <strong>{hospital.hospital_name}</strong>
-                          <small>{hospital.hospital_manager}</small>
+                        <div className="hospital-cell">
+                          <div className="hospital-avatar-small">
+                            <Hospital size={20} />
+                          </div>
+                          <div>
+                            <strong>{hospital.hospital_name}</strong>
+                            <small>{hospital.hospital_manager}</small>
+                          </div>
                         </div>
                       </td>
                       <td>{hospital.registration_no}</td>
@@ -369,8 +505,8 @@ const Hospitals = () => {
                       </td>
                       <td>
                         <div className="stats-info">
-                          <span>👨‍⚕️ {hospital.total_doctors}</span>
-                          <span>🛏️ {hospital.total_beds}</span>
+                          <span>👨‍⚕️ {hospital.total_doctors || 0}</span>
+                          <span>🛏️ {hospital.total_beds || 0}</span>
                         </div>
                       </td>
                       <td>
@@ -384,7 +520,7 @@ const Hospitals = () => {
                           className="status-update-select"
                           value={hospital.status}
                           onChange={(e) => handleStatusChange(hospital._id, e.target.value)}
-                          disabled={updatingStatus || hospital.status === "approved" || hospital.status === "rejected"}
+                          disabled={updatingStatus}
                         >
                           <option value="pending">Pending</option>
                           <option value="approved">Approved</option>
@@ -410,6 +546,7 @@ const Hospitals = () => {
                   <td colSpan="9" className="no-data">
                     <AlertCircle size={48} />
                     <p>No hospitals found</p>
+                    <button onClick={resetFilters} className="clear-filters-btn">Clear Filters</button>
                   </td>
                 </tr>
               )}
@@ -444,7 +581,7 @@ const Hospitals = () => {
                     <div className="card-details">
                       <div className="detail">
                         <MapPin size={14} />
-                        <span>{hospital.city?.city_name || 'N/A'}</span>
+                        <span>{hospital.city?.cityName || 'N/A'}</span>
                       </div>
                       <div className="detail">
                         <Phone size={14} />
@@ -458,11 +595,11 @@ const Hospitals = () => {
                     <div className="card-stats">
                       <div className="stat">
                         <Users size={16} />
-                        <span>{hospital.total_doctors} Doctors</span>
+                        <span>{hospital.total_doctors || 0} Doctors</span>
                       </div>
                       <div className="stat">
                         <Bed size={16} />
-                        <span>{hospital.total_beds} Beds</span>
+                        <span>{hospital.total_beds || 0} Beds</span>
                       </div>
                     </div>
                     <div className="card-badges">
@@ -501,6 +638,7 @@ const Hospitals = () => {
             <div className="no-data-grid">
               <AlertCircle size={48} />
               <p>No hospitals found</p>
+              <button onClick={resetFilters} className="clear-filters-btn">Clear Filters</button>
             </div>
           )}
         </div>
@@ -517,7 +655,7 @@ const Hospitals = () => {
             Previous
           </button>
           <span className="page-info">
-            Page {currentPage} of {totalPages}
+            Page {currentPage} of {totalPages} ({filteredHospitals.length} hospitals)
           </span>
           <button
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}

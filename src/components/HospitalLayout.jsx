@@ -12,6 +12,7 @@ import { useTheme } from './ThemeContext';
 import '../styles/HospitalLayout.css';
 import DoctorsReport from './DoctorsReport';
 import LabsReport from './LabsReport';
+import AppointmentReport from './AppointmentReport';
 
 const HospitalLayout = () => {
   const { isDarkMode } = useTheme();
@@ -35,6 +36,8 @@ const HospitalLayout = () => {
         return <DoctorsReport/>;
       case 'lab-report':
         return <LabsReport/>;
+      case 'appointment-report':
+        return <AppointmentReport/>;
       case 'edit-profile':
         return <EditProfile />;
       case 'reset-password':

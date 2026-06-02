@@ -17,14 +17,16 @@ import {
   CheckCircle,
   AlertCircle,
   Loader,
-  Trash2,
   ChevronLeft,
   ChevronRight,
   Activity,
   Clock,
   Building2,
   Users,
-  Award
+  Award,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import '../styles/LabManagement.css';
 
@@ -39,6 +41,8 @@ const LabManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedLab, setSelectedLab] = useState(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: 'labName', direction: 'asc' });
   const [formData, setFormData] = useState({
     labName: '',
     labManager: '',
@@ -57,34 +61,54 @@ const LabManagement = () => {
   const [submitting, setSubmitting] = useState(false);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(6);
+  const [itemsPerPage] = useState(8);
 
   // Fetch labs on component mount
   useEffect(() => {
     fetchLabs();
   }, []);
 
-  // Filter labs based on search and status
+  // Filter, search, and sort labs
   useEffect(() => {
-    let filtered = [...labs];
+    let results = [...labs];
     
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(lab =>
-        lab.labName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lab.labManager?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lab.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    // Apply search
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      results = results.filter(lab =>
+        lab.labName?.toLowerCase().includes(searchLower) ||
+        lab.labManager?.toLowerCase().includes(searchLower) ||
+        lab.email?.toLowerCase().includes(searchLower)
       );
     }
     
     // Apply status filter
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(lab => lab.status === statusFilter);
+      results = results.filter(lab => lab.status === statusFilter);
     }
     
-    setFilteredLabs(filtered);
+    // Apply sorting
+    results.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      
+      // Handle numeric values
+      if (sortConfig.key === 'age') {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      } else {
+        aValue = String(aValue || '').toLowerCase();
+        bValue = String(bValue || '').toLowerCase();
+      }
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    setFilteredLabs(results);
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, labs]);
+  }, [searchTerm, statusFilter, labs, sortConfig]);
 
   const fetchLabs = async () => {
     setLoading(true);
@@ -94,8 +118,6 @@ const LabManagement = () => {
         headers: { "Authorization": `Bearer ${token}` }
       });
       
-      // console.log("first",response)
-      // Handle different response structures
       let labsArray = [];
       if (response.data && Array.isArray(response.data.labs)) {
         labsArray = response.data.labs;
@@ -113,13 +135,33 @@ const LabManagement = () => {
     }
   };
 
+  // Sorting handler
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setSortConfig({ key: 'labName', direction: 'asc' });
+  };
+
+  // Get sort icon
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return <ArrowUpDown size={14} />;
+    return sortConfig.direction === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
+  };
+
   const validateForm = (data, isEdit = false) => {
     const errors = {};
     
     if (!data.labName?.trim()) errors.labName = 'Lab name is required';
     if (!data.labManager?.trim()) errors.labManager = 'Lab manager name is required';
     
-    // Only validate email for create form
     if (!isEdit) {
       if (!data.email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) errors.email = 'Valid email is required';
     }
@@ -178,7 +220,6 @@ const LabManagement = () => {
 
   const handleUpdateLab = async (e) => {
     e.preventDefault();
-    // Validate edit form (without email)
     const errors = validateForm(editFormData, true);
     
     if (Object.keys(errors).length > 0) {
@@ -189,7 +230,6 @@ const LabManagement = () => {
     setSubmitting(true);
     try {
       const token = sessionStorage.getItem('token');
-      // Only send fields that should be updated (excluding email)
       const updateData = {
         labName: editFormData.labName,
         labManager: editFormData.labManager,
@@ -308,38 +348,77 @@ const LabManagement = () => {
             <p>Manage all laboratory facilities and staff</p>
           </div>
         </div>
-        <button className="add-lab-btn" onClick={() => setShowModal(true)}>
-          <Plus size={20} />
-          Add New Lab
-        </button>
-      </div>
-
-      {/* Filters Section */}
-      <div className="filters-section">
-        <div className="search-box">
-          <Search size={18} />
-          <input
-            type="text"
-            placeholder="Search by lab name, manager or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          {searchTerm && (
-            <button className="clear-search" onClick={() => setSearchTerm('')}>
-              <X size={14} />
+        <div className="header-right">
+          <div className="search-box">
+            <Search size={18} />
+            <input
+              type="text"
+              placeholder="Search by lab name, manager or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="clear-search">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          <button className="filter-btn" onClick={() => setIsFilterModalOpen(true)}>
+            <Filter size={18} />
+            Filter
+            {statusFilter !== 'all' && <span className="filter-badge">•</span>}
+          </button>
+          {(statusFilter !== 'all' || searchTerm) && (
+            <button className="reset-btn" onClick={resetFilters}>
+              Reset All
             </button>
           )}
-        </div>
-        
-        <div className="filter-group">
-          <Filter size={18} />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+          <button className="add-lab-btn" onClick={() => setShowModal(true)}>
+            <Plus size={20} />
+            Add New Lab
+          </button>
         </div>
       </div>
+
+      {/* Active Filters Display */}
+      {statusFilter !== 'all' && (
+        <div className="active-filters">
+          <span>Active Filters:</span>
+          <div className="filter-tag">
+            Status: {statusFilter === 'active' ? 'Active' : 'Inactive'}
+            <button onClick={() => setStatusFilter('all')}>×</button>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsFilterModalOpen(false)}>
+          <div className="modal-content filter-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Filter Labs</h2>
+              <button onClick={() => setIsFilterModalOpen(false)} className="close-btn"><X size={20} /></button>
+            </div>
+            <div className="modal-body">
+              <div className="filter-group">
+                <label>Status</label>
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inActive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => {
+                resetFilters();
+                setIsFilterModalOpen(false);
+              }} className="btn-secondary">Reset All</button>
+              <button onClick={() => setIsFilterModalOpen(false)} className="btn-primary">Apply</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Summary */}
       <div className="stats-summary">
@@ -381,7 +460,7 @@ const LabManagement = () => {
         </div>
       </div>
 
-      {/* Labs Grid */}
+      {/* Labs Table */}
       {loading ? (
         <div className="loading-container">
           <Loader size={40} className="spinner" />
@@ -389,68 +468,70 @@ const LabManagement = () => {
         </div>
       ) : (
         <>
-          <div className="labs-grid">
-            {currentItems.length === 0 ? (
-              <div className="no-results">
-                <FlaskConical size={64} />
-                <h3>No labs found</h3>
-                <p>{searchTerm || statusFilter !== 'all' ? 'Try adjusting your filters' : 'Click "Add New Lab" to create your first lab'}</p>
-              </div>
-            ) : (
-              currentItems.map((lab) => (
-                <div key={lab._id} className="lab-card">
-                  <div className="card-header">
-                    <div className="lab-icon">
-                      <FlaskConical size={24} />
-                    </div>
-                    <div className="lab-title">
-                      <h3>{lab.labName}</h3>
-                      {getStatusBadge(lab.status)}
-                    </div>
-                    <div className="card-actions">
-                      <button className="action-btn edit" onClick={() => openEditModal(lab)}>
-                        <Edit size={16} />
-                      </button>
-                      <button 
-                        className={`action-btn status ${lab.status === 'active' ? 'inactive' : 'active'}`}
-                        onClick={() => handleStatusUpdate(lab._id, lab.status)}
-                      >
-                        <Power size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="card-body">
-                    <div className="info-row">
-                      <User size={16} />
-                      <span className="label">Lab Manager:</span>
-                      <span className="value">{lab.labManager}</span>
-                    </div>
-                    <div className="info-row">
-                      <Mail size={16} />
-                      <span className="label">Email:</span>
-                      <span className="value">{lab.email || 'Not provided'}</span>
-                    </div>
-                    <div className="info-row">
-                      <Calendar size={16} />
-                      <span className="label">Age:</span>
-                      <span className="value">{lab.age} years</span>
-                    </div>
-                    <div className="info-row">
-                      <GraduationCap size={16} />
-                      <span className="label">Qualification:</span>
-                      <span className="value">{lab.qualification}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="card-footer">
-                    <span className="created-date">
-                      Created: {new Date(lab.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="labs-table-container">
+            <table className="labs-table">
+              <thead>
+                <tr>
+                  <th onClick={() => handleSort('labName')} className="sortable-header">
+                    Lab Name {getSortIcon('labName')}
+                  </th>
+                  <th onClick={() => handleSort('labManager')} className="sortable-header">
+                    Lab Manager {getSortIcon('labManager')}
+                  </th>
+                  <th>Email</th>
+                  <th onClick={() => handleSort('age')} className="sortable-header">
+                    Age {getSortIcon('age')}
+                  </th>
+                  <th>Qualification</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="no-data">
+                      <FlaskConical size={48} />
+                      <p>No labs found</p>
+                      <button onClick={resetFilters} className="clear-filters-btn">Clear Filters</button>
+                    </td>
+                  </tr>
+                ) : (
+                  currentItems.map((lab) => (
+                    <tr key={lab._id}>
+                      <td>
+                        <div className="lab-cell">
+                          <div className="lab-avatar-small">
+                            <FlaskConical size={20} />
+                          </div>
+                          <div>
+                            <strong>{lab.labName}</strong>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{lab.labManager}</td>
+                      <td>{lab.email || 'Not provided'}</td>
+                      <td>{lab.age} years</td>
+                      <td>{lab.qualification}</td>
+                      <td>{getStatusBadge(lab.status)}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <button className="action-btn edit" onClick={() => openEditModal(lab)}>
+                            <Edit size={16} />
+                          </button>
+                          <button 
+                            className={`action-btn status ${lab.status === 'active' ? 'inactive' : 'active'}`}
+                            onClick={() => handleStatusUpdate(lab._id, lab.status)}
+                          >
+                            <Power size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
 
           {/* Pagination */}
@@ -463,17 +544,9 @@ const LabManagement = () => {
                 <ChevronLeft size={18} />
                 Previous
               </button>
-              <div className="page-numbers">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={currentPage === page ? 'active' : ''}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
+              <span className="page-info">
+                Page {currentPage} of {totalPages} ({filteredLabs.length} labs)
+              </span>
               <button 
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
@@ -584,7 +657,7 @@ const LabManagement = () => {
         </div>
       )}
 
-      {/* Edit Lab Modal - Email field removed */}
+      {/* Edit Lab Modal */}
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -654,7 +727,6 @@ const LabManagement = () => {
                   </div>
                 </div>
 
-                {/* Informational message about email */}
                 <div className="info-message">
                   <Mail size={14} />
                   <span>Email address cannot be changed. Contact administrator for email updates.</span>

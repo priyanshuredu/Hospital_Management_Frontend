@@ -268,12 +268,10 @@ const EditProfile = () => {
 
   if (loading) {
     return (
-      <div className={`edit-profile-container ${isDarkMode ? 'dark' : 'light'}`}>
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Loading profile data...</p>
+      <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading appointment history...</p>
         </div>
-      </div>
     );
   }
 

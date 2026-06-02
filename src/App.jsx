@@ -17,6 +17,7 @@ import TestReportHistory from './components/TestReportHistory';
 import ResetPassword from './components/ResetPassword';
 import EditProfile from './components/EditProfile';
 import AppointmentHistory from './components/AppointmentHistory';
+import TestReportDetails from './components/TestReportDetails';
 
 function App() {
   const [role,setRole] = useState(null);
@@ -42,6 +43,7 @@ function App() {
         <Route path='/my-reports' element={<TestReportHistory/>}></Route>
         <Route path='/reset-password' element={<ResetPassword/>}></Route>
         <Route path='/edit-profile' element={<EditProfile/>}></Route>
+        <Route path='/test-report/:id' element={<TestReportDetails/>}></Route>
         <Route path='/appointment-history' element={<AppointmentHistory/>}></Route>
         <Route path='*' element={<NotFound/>}></Route>
       </Routes>
