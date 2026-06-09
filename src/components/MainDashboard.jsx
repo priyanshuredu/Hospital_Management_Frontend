@@ -209,9 +209,9 @@ const MainDashboard = () => {
       <header className={`main-header ${isVisible ? 'header-visible' : ''}`}>
         <nav className="nav-container">
           <div className="logo-container" onClick={() => navigate('/')}>
-            <div className="logo-icon">
+            <div className="logo-icon" style={{ background: "linear-gradient(135deg, #eef2ff, #dbeafe)" ,color:'#4361ee'}}>
               <Hospital size={28} />
-              <Heart size={16} className="logo-heart" />
+              {/* <Heart size={16} className="logo-heart" /> */}
             </div>
             <span className="logo-text">
               SmarTech<span className="logo-highlight">Health</span>
@@ -302,10 +302,10 @@ const MainDashboard = () => {
         </div>
         
         <div className="sidebar-menu">
-          <button className="sidebar-menu-item" onClick={handleViewProfile}>
+          {/* <button className="sidebar-menu-item" onClick={handleViewProfile}>
             <User size={20} />
             <span>View Profile</span>
-          </button>
+          </button> */}
           <button className="sidebar-menu-item" onClick={handleEditProfile}>
             <Edit2 size={20} />
             <span>Edit Profile</span>

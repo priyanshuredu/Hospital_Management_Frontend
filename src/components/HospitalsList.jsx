@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Bed, Users, Search, Building, ChevronRight } from 'lucide-react';
 import apiService from '../services/api';
+import '../styles/HospitalList.css'
 
 const HospitalsList = ({ onViewDetails, onBookAppointment }) => {
   const [hospitals, setHospitals] = useState([]);

@@ -130,10 +130,16 @@
 
 .appointments-table th {
   padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   text-align: left;
   font-weight: 600;
   font-size: 0.9rem;
 }
+
+.appointments-table tr{
+  color: #000;
+}
+
 
 .appointments-table td {
   padding: 15px;

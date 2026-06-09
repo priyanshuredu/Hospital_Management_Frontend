@@ -115,7 +115,7 @@ const Login = () => {
         transition={{ duration: 0.4 }}
       >
         <div className="login-header">
-          <div className="logo-icon">
+          <div className="logo-icon" style={{ background: "linear-gradient(135deg, #eef2ff, #dbeafe)" ,color:'#4361ee'}}>
             <LogIn size={32} />
           </div>
           <h2>Welcome Back</h2>
@@ -132,11 +132,11 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label>
-              <Mail size={16} />
+              {/* <Mail size={16} /> */}
               Email Address
             </label>
             <div className="input-group">
-              <Mail size={18} className="input-icon" />
+              <Mail size={18} className="input-icon" style={{ opacity: form.email ? 0 : 1, pointerEvents: form.email ? 'auto' : 'none' }}/>
               <input
                 type="email"
                 value={form.email}
@@ -155,11 +155,11 @@ const Login = () => {
 
           <div className="form-group">
             <label>
-              <Lock size={16} />
+              {/* <Lock size={16} /> */}
               Password
             </label>
             <div className="input-group">
-              <Lock size={18} className="input-icon" />
+              <Lock size={18} className="input-icon" style={{ opacity: form.password ? 0 : 1, pointerEvents: form.password ? 'auto' : 'none' }}/>
               <input
                 type={showPassword ? "text" : "password"}
                 value={form.password}

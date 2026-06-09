@@ -172,11 +172,11 @@ const AppointmentHistory = () => {
                             </thead>
                             <tbody>
                                 {filteredAppointments.map((appointment) => (
-                                    <tr key={appointment._id}>
+                                    <tr key={appointment._id} >
                                         <td className="patient-name">
-                                            <strong>{appointment.patientName}</strong>
+                                            <p style={{color: 'black'}}>{appointment.patientName}</p>
                                         </td>
-                                        <td>
+                                        <td >
                                             <div>{new Date(appointment.appointmentDate).toLocaleDateString()}</div>
                                             <div className="time-slot">{appointment.timeSlot}</div>
                                         </td>
