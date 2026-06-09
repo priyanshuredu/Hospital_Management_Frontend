@@ -2,7 +2,7 @@
 // services/api.js - Updated with booking and doctor/hospital endpoints
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'https://hospital-management-backend-9u93.onrender.com';
 const token = sessionStorage.getItem('Token')
 
 export const apiService = {

@@ -58,7 +58,7 @@ const DoctorsReport = () => {
     try {
       setLoading(true);
       const token = sessionStorage.getItem('Token');
-      const response = await axios.get('http://localhost:5000/doctor/all', {
+      const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/doctor/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
       const doctorsData = response.data.doctors || [];

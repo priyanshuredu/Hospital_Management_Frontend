@@ -58,7 +58,7 @@ const PrescriptionsList = () => {
       try {
         setLoading(true);
         const token = sessionStorage.getItem('Token');
-        const response = await axios.get('http://localhost:5000/prescription/by-doctor', {
+        const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/prescription/by-doctor', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -4,7 +4,7 @@ import { useTheme } from './ThemeContext';
 import '../styles/DynamicModal.css';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/location'; // Update with your API URL
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com/location'; // Update with your API URL
 
 const DynamicModal = ({ isOpen, onClose, type, onAdd, existingData = {} }) => {
   const { isDarkMode } = useTheme();

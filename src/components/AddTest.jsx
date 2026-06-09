@@ -35,7 +35,7 @@ const AddTest = ({ onTestAdded }) => {
 
     try {
       const token = sessionStorage.getItem('Token');
-      const response = await axios.post('http://localhost:5000/test/create', formData ,{
+      const response = await axios.post('https://hospital-management-backend-9u93.onrender.com/test/create', formData ,{
         headers:{
             'Authorization':`Bearer ${token}`
         }

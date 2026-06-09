@@ -19,7 +19,7 @@ const TestReportHistory = () => {
     try {
       setLoading(true);
       const storedToken = sessionStorage.getItem('Token');
-      const response = await axios.get('http://localhost:5000/test-report/test-report-history',{
+      const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/test-report/test-report-history',{
         headers: { Authorization: `Bearer ${storedToken}` }
       }); // Update with your API endpoint
       

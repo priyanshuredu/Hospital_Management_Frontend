@@ -4,7 +4,7 @@ import { User, Mail, Save, Camera, X, CheckCircle, AlertCircle } from 'lucide-re
 import axios from 'axios';
 import '../styles/EditProfile.css';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com';
 
 const EditProfile = () => {
   const { isDarkMode } = useTheme();

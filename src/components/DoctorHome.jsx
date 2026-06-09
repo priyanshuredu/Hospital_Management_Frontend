@@ -3,7 +3,7 @@ import { Calendar, Clock, Users, Stethoscope, Activity, TrendingUp, ChevronRight
 import axios from 'axios';
 import '../styles/DoctorHome.css';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com';
 
 const DoctorHome = () => {
   const [todayAppointments, setTodayAppointments] = useState([]);

@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import '../styles/LabTests.css';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com';
 
 const LabTests = ({ activeTab }) => {
   const [tests, setTests] = useState([]);

@@ -21,7 +21,7 @@ const AppointmentHistory = () => {
             setLoading(true);
             const token = sessionStorage.getItem('Token');
             const response = await axios.get(
-                `http://localhost:5000/appointment/history?page=${page}&limit=5`,
+                `https://hospital-management-backend-9u93.onrender.com/appointment/history?page=${page}&limit=5`,
                 { headers: { "Authorization": `Bearer ${token}` } }
             );
             setAppointments(response.data.appointments || []);

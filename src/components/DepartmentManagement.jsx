@@ -6,7 +6,7 @@ import { Plus, RefreshCw, FolderPlus } from 'lucide-react';
 import axios from 'axios';
 import '../styles/DepartmentManagement.css';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com';
 
 const DepartmentManagement = () => {
   const { isDarkMode } = useTheme();

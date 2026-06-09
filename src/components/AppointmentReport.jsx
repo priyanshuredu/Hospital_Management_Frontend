@@ -27,7 +27,7 @@ const AppointmentReport = () => {
     try {
       setLoading(true);
       const token = sessionStorage.getItem('Token');
-      const response = await axios.get('http://localhost:5000/appointment/by-hospital', {
+      const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/appointment/by-hospital', {
         headers: { Authorization: `Bearer ${token}` }
       });
       

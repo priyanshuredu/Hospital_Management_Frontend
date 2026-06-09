@@ -86,7 +86,7 @@ const DoctorAppointments = () => {
   const fetchLabTests = async () => {
     setLoadingLabTests(true);
     try {
-      const response = await axios.get('http://localhost:5000/test/all');
+      const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/test/all');
       let labTestsData = response.data || response;
       if (response?.data?.tests) labTestsData = response.data.tests;
       if (response?.tests) labTestsData = response.tests;

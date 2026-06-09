@@ -6,7 +6,7 @@ import { Plus, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import '../styles/DistrictManagement.css';
 
-const API_URL = 'http://localhost:5000/location';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com/location';
 
 const DistrictManagement = () => {
   const { isDarkMode } = useTheme();

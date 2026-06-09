@@ -41,7 +41,7 @@ const ForgotPassword = () => {
     setGeneralError('');
     
     try {
-      const res = await axios.post('http://localhost:5000/user/verify-mail', { email: form.email });
+      const res = await axios.post('https://hospital-management-backend-9u93.onrender.com/user/verify-mail', { email: form.email });
       if (res.data.message === "Otp sent.") {
         setOtpSent(true);
         setSend(true);
@@ -81,7 +81,7 @@ const ForgotPassword = () => {
         password: form.password
       };
       
-      const res = await axios.post('http://localhost:5000/user/forgot-password', userData);
+      const res = await axios.post('https://hospital-management-backend-9u93.onrender.com/user/forgot-password', userData);
       if(res.data.message === "password updated."){
         setSuccess('Password updated successfully! Redirecting to login...');
         setTimeout(() => {

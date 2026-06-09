@@ -27,7 +27,7 @@ const HospitalReport = () => {
     try {
       setLoading(true);
       const token = sessionStorage.getItem('Token');
-      const response = await axios.get('http://localhost:5000/hospital/all', {
+      const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/hospital/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHospitals(response.data.hospitals || []);

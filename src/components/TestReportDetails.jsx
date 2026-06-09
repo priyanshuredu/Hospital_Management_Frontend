@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import '../styles/TestReportDetails.css';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com';
 
 const TestReportDetails = () => {
   const { id } = useParams();

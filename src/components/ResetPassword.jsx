@@ -67,7 +67,7 @@ const ResetPassword = () => {
     try {
       const token = sessionStorage.getItem('Token');
       const response = await axios.patch(
-        'http://localhost:5000/user/reset-password',
+        'https://hospital-management-backend-9u93.onrender.com/user/reset-password',
         {
           oldPassword: formData.currentPassword,
           newPassword: formData.newPassword

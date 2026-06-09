@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import '../styles/ManageDoctors.css';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com';
 
 const ManageDoctors = () => {
   const navigate = useNavigate();

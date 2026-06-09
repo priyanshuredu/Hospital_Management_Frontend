@@ -6,7 +6,7 @@ import { Plus, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import '../styles/StateManagement.css';
 
-const API_URL = 'http://localhost:5000/location';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com/location';
 
 const StateManagement = () => {
   const { isDarkMode } = useTheme();

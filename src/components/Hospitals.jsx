@@ -51,7 +51,7 @@ const Hospitals = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('http://localhost:5000/hospital/all');
+      const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/hospital/all');
       setHospitals(response.data.hospitals);
       setFilteredHospitals(response.data.hospitals);
     } catch (err) {
@@ -152,7 +152,7 @@ const Hospitals = () => {
   // Fetch single hospital details
   const fetchHospitalDetails = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:5000/hospital/${id}`);
+      const response = await axios.get(`https://hospital-management-backend-9u93.onrender.com/hospital/${id}`);
       setSelectedHospital(response.data.hospital);
       setShowModal(true);
     } catch (err) {
@@ -165,7 +165,7 @@ const Hospitals = () => {
   const updateStatus = async (id, newStatus) => {
     setUpdatingStatus(true);
     try {
-      const response = await axios.patch(`http://localhost:5000/hospital/update-request`, {
+      const response = await axios.patch(`https://hospital-management-backend-9u93.onrender.com/hospital/update-request`, {
         id,
         status: newStatus
       });

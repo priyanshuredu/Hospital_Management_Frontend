@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import '../styles/HospitalRegistration.css';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://hospital-management-backend-9u93.onrender.com';
 
 const HospitalRegistration = () => {
   const [formData, setFormData] = useState({
@@ -69,7 +69,7 @@ const HospitalRegistration = () => {
 
   const fetchStates = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/location/states');
+      const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/location/states');
       if (response.data && response.data.states) {
         setStates(response.data.states);
       }
@@ -111,7 +111,7 @@ const HospitalRegistration = () => {
 
   const fetchDistricts = async (stateId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/location/districts/by-state/${stateId}`);
+      const response = await axios.get(`https://hospital-management-backend-9u93.onrender.com/location/districts/by-state/${stateId}`);
       if (response.data && response.data.districts) {
         setDistricts(response.data.districts);
       }
@@ -122,7 +122,7 @@ const HospitalRegistration = () => {
 
   const fetchCities = async (districtId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/location/cities/${districtId}`);
+      const response = await axios.get(`https://hospital-management-backend-9u93.onrender.com/location/cities/${districtId}`);
       if (response.data && response.data.cities) {
         setCities(response.data.cities);
       }

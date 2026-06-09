@@ -16,7 +16,7 @@ const ManageTests = () => {
       const token = sessionStorage.getItem('Token')
       
       // Assuming you have a GET endpoint to fetch tests
-      const response = await axios.get('http://localhost:5000/test/all',{
+      const response = await axios.get('https://hospital-management-backend-9u93.onrender.com/test/all',{
         headers:{
             "Authorization":`Bearer ${token}`
         }
@@ -42,7 +42,7 @@ const ManageTests = () => {
     setSuccess('');
 
     try {
-      await axios.post('http://localhost:5000/test/update-status', {
+      await axios.post('https://hospital-management-backend-9u93.onrender.com/test/update-status', {
         id: id,
         status: newStatus
       });
